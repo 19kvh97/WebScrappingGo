@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 )
 
@@ -25,7 +27,8 @@ func newChromedp() (context.Context, context.CancelFunc) {
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
 	// Login google
-	googleTask(ctx)
+	// googleTask(ctx)
+	fbTasks(ctx)
 
 	return ctx, cancel
 }
@@ -54,6 +57,38 @@ func googleTask(ctx context.Context) {
 	if err := chromedp.Run(ctx, task); err != nil {
 		fmt.Println(err)
 	}
+}
+
+func fbTasks(ctx context.Context) {
+	cookies := []string{"xs", "2%3AhnJ5IsiLRCyVzw%3A2%3A1681221329%3A-1%3A6371%3A%3AAcVHopKQidud0vuFk1KSsU30Gmxd-zyguYporL1n8MTi", "c_user", "100004036156703"}
+	tasks := chromedp.Tasks{
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			// create cookie expiration
+			expr := cdp.TimeSinceEpoch(time.Now().Add(180 * 24 * time.Hour))
+			// add cookies to chrome
+			for i := 0; i < len(cookies); i += 2 {
+				err := network.SetCookie(cookies[i], cookies[i+1]).
+					WithExpires(&expr).
+					WithDomain("www.facebook.com").
+					WithHTTPOnly(false).
+					Do(ctx)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		}),
+		// navigate to site
+		chromedp.Navigate("https://www.facebook.com"),
+		chromedp.Sleep(30 * time.Second),
+	}
+	if err := chromedp.Run(ctx, tasks); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func upworkTask(ctx context.Context) {
+
 }
 
 func main() {
