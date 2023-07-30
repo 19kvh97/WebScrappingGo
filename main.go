@@ -1,71 +1,59 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
-	"github.com/gocolly/colly"
+	"github.com/chromedp/chromedp"
 )
 
-func main() {
-	// c := colly.NewCollector()
+const (
+	googleSignin = "https://accounts.google.com"
+)
 
-	// c.OnRequest(func(r *colly.Request) {
-	// 	log.Println("Visiting: ", r.URL)
-	// 	r.Headers.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47")
-	// 	// r.Headers.Set("cookie", "__cf_bm=_wxQLkRiwubRFmgZWpE0V_5w0egNZaEQ_wjeqCJsw.8-1690690604-0-Ad1fCm49xuwaRCHw3dJvohy9SxQP6ozhM0Rn+5vRrbPdRHuMOzAyoiliVUCtEhA/LHAZ5CCkOyFt51IOHFujAw4=; __cflb=02DiuEXPXZVk436fJfSVuuwDqLqkhavJb4fAJVoRrw5MD; _cfuvid=y7F2Y4vqBZhggPoHdCzsW4Jh1GOr4k0WU7tsVUOtNCE-1690690604750-0-604800000; country_code=VN; visitor_gql_token=oauth2v2_e419cb21db1a821452d2511385e7f225; visitor_id=42.118.50.46.1690690605536000")
-	// 	r.Headers.Set("Accept", "*/*")
-	// 	r.Headers.Set("Accept-Encoding", "gzip, deflate, br")
-	// 	r.Headers.Set("Connection", "keep-alive")
-	// })
+func newChromedp() (context.Context, context.CancelFunc) {
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", false),
+		chromedp.Flag("start-fullscreen", true),
+	)
+	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
+	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
-	// c.OnError(func(_ *colly.Response, err error) {
-	// 	log.Println("Something went wrong: ", err)
-	// })
+	// Login google
+	googleTask(ctx)
 
-	// c.OnResponse(func(r *colly.Response) {
-	// 	log.Println("Page visited: ", r.Request.URL)
-	// })
+	return ctx, cancel
+}
 
-	// c.OnHTML("li.product", func(e *colly.HTMLElement) {
-	// 	// printing all URLs associated with the a links in the page
-	// 	log.Printf("%v", e.Attr("href"))
-	// })
+func googleTask(ctx context.Context) {
+	email := "//*[@id='identifierId']"
+	password := "//*[@id='password']/div[1]/div/div[1]/input"
+	buttonEmailNext := "//*[@id='identifierNext']/div/button"
+	buttonPasswordNext := "//*[@id='passwordNext']/div/button/span"
 
-	// c.OnScraped(func(r *colly.Response) {
-	// 	log.Println(r.Request.URL, " scraped!")
-	// })
+	task := chromedp.Tasks{
+		chromedp.Navigate(googleSignin),
+		chromedp.SendKeys(email, "email"),
+		chromedp.Sleep(2 * time.Second),
 
-	// c.Visit("https://www.upwork.com")
-	// log.Println("Hello World!")
+		chromedp.Click(buttonEmailNext),
+		chromedp.Sleep(2 * time.Second),
 
-	// Create a new Colly collector
-	c := colly.NewCollector()
+		chromedp.SendKeys(password, "pw"),
+		chromedp.Sleep(2 * time.Second),
 
-	c.OnRequest(func(r *colly.Request) {
-		r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-	})
-
-	c.Limit(&colly.LimitRule{
-		DomainGlob:  "*",
-		Parallelism: 2,               // Set the number of concurrent requests
-		RandomDelay: 5 * time.Second, // Add a random delay of up to 5 seconds between requests
-	})
-
-	// Set up the callback for when a visited HTML element is found
-	c.OnHTML(".job-title-link", func(e *colly.HTMLElement) {
-		fmt.Println(e.Text)
-	})
-
-	// Set up the callback for when a visited HTML element's attributes are found
-	c.OnHTML(".job-tile-title-link", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-		fmt.Println("Link:", link)
-	})
-
-	// Start the scraping process by visiting the Upwork website
-	err := c.Visit("https://www.upwork.com/")
-	if err != nil {
-		fmt.Println("Error:", err)
+		chromedp.Click(buttonPasswordNext),
+		chromedp.Sleep(2 * time.Second),
 	}
+
+	if err := chromedp.Run(ctx, task); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func main() {
+	_, cancel := newChromedp()
+	defer cancel()
 }
