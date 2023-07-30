@@ -17,6 +17,9 @@ func newChromedp() (context.Context, context.CancelFunc) {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", false),
 		chromedp.Flag("start-fullscreen", true),
+		chromedp.Flag("enable-automation", false),
+		chromedp.Flag("disable-extensions", false),
+		chromedp.Flag("remote-debugging-port", "9222"),
 	)
 	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
@@ -35,13 +38,13 @@ func googleTask(ctx context.Context) {
 
 	task := chromedp.Tasks{
 		chromedp.Navigate(googleSignin),
-		chromedp.SendKeys(email, "email"),
+		chromedp.SendKeys(email, "19kvh97"),
 		chromedp.Sleep(2 * time.Second),
 
 		chromedp.Click(buttonEmailNext),
 		chromedp.Sleep(2 * time.Second),
 
-		chromedp.SendKeys(password, "pw"),
+		chromedp.SendKeys(password, "kimvanhung1997"),
 		chromedp.Sleep(2 * time.Second),
 
 		chromedp.Click(buttonPasswordNext),
