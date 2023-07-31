@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
+
+	uw "github.com/19kvh97/webscrappinggo/upworksdk"
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/network"
@@ -14,24 +15,6 @@ import (
 const (
 	googleSignin = "https://accounts.google.com"
 )
-
-func newChromedp() (context.Context, context.CancelFunc) {
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("headless", false),
-		chromedp.Flag("start-fullscreen", true),
-		chromedp.Flag("enable-automation", false),
-		chromedp.Flag("disable-extensions", false),
-		chromedp.Flag("remote-debugging-port", "9222"),
-	)
-	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
-	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
-
-	// Login google
-	// googleTask(ctx)
-	fbTasks(ctx)
-
-	return ctx, cancel
-}
 
 func googleTask(ctx context.Context) {
 	email := "//*[@id='identifierId']"
@@ -87,11 +70,13 @@ func fbTasks(ctx context.Context) {
 	}
 }
 
-func upworkTask(ctx context.Context) {
-
-}
-
 func main() {
-	_, cancel := newChromedp()
-	defer cancel()
+	uw.SdkInstance().NewSession(uw.Config{
+		Mode: uw.SYNC_BEST_MATCH,
+	})
+	time.Sleep(5 * time.Second)
+	uw.SdkInstance().NewSession(uw.Config{
+		Mode: uw.SYNC_RECENTLY,
+	})
+	time.Sleep(5 * time.Minute)
 }
