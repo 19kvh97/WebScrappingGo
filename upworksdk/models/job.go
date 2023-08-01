@@ -1,5 +1,7 @@
 package models
 
+import "github.com/PuerkitoBio/goquery"
+
 type PriceType int
 
 const (
@@ -24,4 +26,8 @@ type Job struct {
 	ProposalCount int       `json:"proposal_count"`
 	Tags          []string  `json:"tags"`
 	Client        Client    `json:"client"`
+}
+
+func (job *Job) ImportData(info *goquery.Selection) {
+
 }

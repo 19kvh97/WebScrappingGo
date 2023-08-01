@@ -2,10 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"time"
 
 	uw "github.com/19kvh97/webscrappinggo/upworksdk"
+	"github.com/19kvh97/webscrappinggo/upworksdk/models"
+	"github.com/19kvh97/webscrappinggo/upworksdk/workers"
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/network"
@@ -71,12 +76,37 @@ func fbTasks(ctx context.Context) {
 }
 
 func main() {
-	uw.SdkInstance().NewSession(uw.Config{
-		Mode: uw.SYNC_BEST_MATCH,
-	})
-	time.Sleep(5 * time.Second)
-	uw.SdkInstance().NewSession(uw.Config{
-		Mode: uw.SYNC_RECENTLY,
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	var rawCookie []models.Cookie
+	content, err := ioutil.ReadFile("hungkv_cookie.json")
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(content, &rawCookie)
+	if err != nil {
+		panic(err)
+	}
+
+	validCookie, err := uw.ExtractValidateCookies(rawCookie)
+	if err != nil {
+		panic(err)
+	}
+
+	uw.SdkInstance().Run(uw.Config{
+		Mode: workers.SYNC_BEST_MATCH,
+		Account: models.UpworkAccount{
+			Cookie: validCookie,
+		},
+	}, uw.Config{
+		Mode: workers.SYNC_MESSAGE,
+		Account: models.UpworkAccount{
+			Cookie: validCookie,
+		},
+	}, uw.Config{
+		Mode: workers.SYNC_RECENTLY,
+		Account: models.UpworkAccount{
+			Cookie: validCookie,
+		},
 	})
 	time.Sleep(5 * time.Minute)
 }

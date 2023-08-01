@@ -1,6 +1,10 @@
 package workers
 
-import "context"
+import (
+	"context"
+
+	"github.com/19kvh97/webscrappinggo/upworksdk/models"
+)
 
 type RunningMode int
 
@@ -9,6 +13,12 @@ const (
 	SYNC_RECENTLY
 	SYNC_MESSAGE
 )
+
+func (rm *RunningMode) GetName() string {
+	return []string{
+		"SYNC_BEST_MATCH", "SYNC_RECENTLY", "SYNC_MESSAGE",
+	}[*rm]
+}
 
 func (rm *RunningMode) GetLink() string {
 	switch *rm {
@@ -23,7 +33,12 @@ func (rm *RunningMode) GetLink() string {
 	}
 }
 
-type Worker interface {
+type IWorker interface {
 	PrepareTask() func(context.Context)
 	GetMode() RunningMode
+}
+
+type Worker struct {
+	IWorker
+	Account models.UpworkAccount
 }
