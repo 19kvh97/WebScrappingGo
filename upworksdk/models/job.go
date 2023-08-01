@@ -29,5 +29,5 @@ type Job struct {
 }
 
 func (job *Job) ImportData(info *goquery.Selection) {
-
+	job.Title = info.Find(".up-n-link").Text()
 }
