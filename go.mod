@@ -1,11 +1,9 @@
-module demo_scrap
+module github.com/19kvh97/webscrappinggo
 
 go 1.18
 
-replace github.com/19kvh97/webscrappinggo/upworksdk => ./upworksdk
-
 require (
-	github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-00010101000000-000000000000
+	github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230806090140-a0c48db13101
 	github.com/chromedp/chromedp v0.9.2
 )
 
