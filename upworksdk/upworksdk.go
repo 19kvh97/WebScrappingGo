@@ -59,20 +59,23 @@ func (sdkM *SdkManager) RegisterListener() {
 
 }
 
-func (sdkM *SdkManager) Run(config Config) error {
+func (sdkM *SdkManager) Run(configs ...Config) error {
 	if sdkM.configs == nil {
 		sdkM.configs = []Config{}
 	}
-	sdkM.configs = append(sdkM.configs, config)
-	sdkM.wg.Add(1)
-	go func(config Config) {
-		log.Printf("Running %s", config.Mode.GetName())
-		err := sdkM.newSession(config)
-		if err != nil {
-			log.Printf("Error from routine %s: %v", config.Mode.GetName(), err)
-		}
-		defer sdkM.wg.Done()
-	}(config)
+	sdkM.configs = append(sdkM.configs, configs...)
+	sdkM.wg.Add(len(configs))
+	for i := 0; i < len(configs); i++ {
+		go func(config Config) {
+			log.Printf("Running %s", config.Mode.GetName())
+			err := sdkM.newSession(config)
+			if err != nil {
+				log.Printf("Error from routine %s: %v", config.Mode.GetName(), err)
+			}
+			defer sdkM.wg.Done()
+		}(configs[i])
+	}
+
 	return nil
 }
 
