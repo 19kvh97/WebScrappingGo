@@ -10,7 +10,6 @@ import (
 
 	uw "github.com/19kvh97/webscrappinggo/upworksdk"
 	"github.com/19kvh97/webscrappinggo/upworksdk/models"
-	"github.com/19kvh97/webscrappinggo/upworksdk/workers"
 
 	"github.com/chromedp/chromedp"
 )
@@ -62,8 +61,8 @@ func main() {
 		panic(err)
 	}
 
-	uw.SdkInstance().Run(uw.Config{
-		Mode: workers.SYNC_BEST_MATCH,
+	uw.SdkInstance().Run(models.Config{
+		Mode: models.SYNC_BEST_MATCH,
 		Account: models.UpworkAccount{
 			Cookie: validCookie,
 		},

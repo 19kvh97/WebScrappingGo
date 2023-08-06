@@ -21,8 +21,8 @@ type BestMatchWorker struct {
 	wk.Worker
 }
 
-func (bmw *BestMatchWorker) GetMode() wk.RunningMode {
-	return wk.SYNC_BEST_MATCH
+func (bmw *BestMatchWorker) GetMode() md.RunningMode {
+	return md.SYNC_BEST_MATCH
 }
 
 func (bmw *BestMatchWorker) PrepareTask() func(context.Context) {

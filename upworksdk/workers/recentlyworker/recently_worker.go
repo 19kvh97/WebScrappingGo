@@ -21,8 +21,8 @@ type RecentlyWorker struct {
 	wk.Worker
 }
 
-func (rw *RecentlyWorker) GetMode() wk.RunningMode {
-	return wk.SYNC_RECENTLY
+func (rw *RecentlyWorker) GetMode() md.RunningMode {
+	return md.SYNC_RECENTLY
 }
 
 func (rw *RecentlyWorker) PrepareTask() func(context.Context) {

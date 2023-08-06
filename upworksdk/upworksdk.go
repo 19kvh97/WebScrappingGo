@@ -16,13 +16,8 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-type Config struct {
-	Mode    wk.RunningMode
-	Account models.UpworkAccount
-}
-
 type SdkManager struct {
-	configs []Config
+	configs []models.Config
 	wg      sync.WaitGroup
 }
 
@@ -59,14 +54,14 @@ func (sdkM *SdkManager) RegisterListener() {
 
 }
 
-func (sdkM *SdkManager) Run(configs ...Config) error {
+func (sdkM *SdkManager) Run(configs ...models.Config) error {
 	if sdkM.configs == nil {
-		sdkM.configs = []Config{}
+		sdkM.configs = []models.Config{}
 	}
 	sdkM.configs = append(sdkM.configs, configs...)
 	sdkM.wg.Add(len(configs))
 	for i := 0; i < len(configs); i++ {
-		go func(config Config) {
+		go func(config models.Config) {
 			log.Printf("Running %s", config.Mode.GetName())
 			err := sdkM.newSession(config)
 			if err != nil {
@@ -79,22 +74,22 @@ func (sdkM *SdkManager) Run(configs ...Config) error {
 	return nil
 }
 
-func (sdkM *SdkManager) newSession(config Config) error {
+func (sdkM *SdkManager) newSession(config models.Config) error {
 	var worker wk.IWorker
 	switch config.Mode {
-	case wk.SYNC_BEST_MATCH:
+	case models.SYNC_BEST_MATCH:
 		worker = &bmw.BestMatchWorker{
 			Worker: wk.Worker{
 				Account: config.Account,
 			},
 		}
-	case wk.SYNC_RECENTLY:
+	case models.SYNC_RECENTLY:
 		worker = &rw.RecentlyWorker{
 			Worker: wk.Worker{
 				Account: config.Account,
 			},
 		}
-	case wk.SYNC_MESSAGE:
+	case models.SYNC_MESSAGE:
 		worker = &mw.MessageWorker{
 			Worker: wk.Worker{
 				Account: config.Account,

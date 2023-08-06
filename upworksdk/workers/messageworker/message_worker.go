@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	md "github.com/19kvh97/webscrappinggo/upworksdk/models"
 	wk "github.com/19kvh97/webscrappinggo/upworksdk/workers"
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/network"
@@ -16,8 +17,8 @@ type MessageWorker struct {
 	wk.Worker
 }
 
-func (mw *MessageWorker) GetMode() wk.RunningMode {
-	return wk.SYNC_MESSAGE
+func (mw *MessageWorker) GetMode() md.RunningMode {
+	return md.SYNC_MESSAGE
 }
 
 func (mw *MessageWorker) PrepareTask() func(context.Context) {
