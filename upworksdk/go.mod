@@ -1,4 +1,4 @@
-module github.com/19kvh97/webscrappinggo
+module github.com/19kvh97/webscrappinggo/upworksdk
 
 go 1.18
 
@@ -19,4 +19,3 @@ require (
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 )
-
