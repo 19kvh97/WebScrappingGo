@@ -36,9 +36,11 @@ func (rm *RunningMode) GetLink() string {
 type IWorker interface {
 	PrepareTask() func(context.Context)
 	GetMode() RunningMode
+	RegisterChannel(chan models.IParcell) error
 }
 
 type Worker struct {
 	IWorker
-	Account models.UpworkAccount
+	Account  models.UpworkAccount
+	Channels []chan models.IParcell
 }
