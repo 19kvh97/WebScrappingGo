@@ -41,7 +41,7 @@ func (sdkM *SdkManager) init() error {
 	sdkM.wg.Add(1)
 	go func() {
 		for {
-			log.Printf("Current goroutine count %d", len(sdkM.configs)+1)
+			// log.Printf("Current goroutine count %d", len(sdkM.configs)+1)
 			time.Sleep(10 * time.Second)
 		}
 	}()
