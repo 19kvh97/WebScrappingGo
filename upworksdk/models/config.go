@@ -28,6 +28,7 @@ func (rm *RunningMode) GetLink() string {
 }
 
 type Config struct {
+	Id      string
 	Mode    RunningMode
 	Account UpworkAccount
 }

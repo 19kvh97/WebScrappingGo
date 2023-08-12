@@ -2,7 +2,9 @@ package upworksdk
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -43,6 +45,7 @@ func (sdkM *SdkManager) init() error {
 		for {
 			// log.Printf("Current goroutine count %d", len(sdkM.configs)+1)
 			time.Sleep(10 * time.Second)
+
 		}
 	}()
 	sdkM.wg.Wait()
@@ -50,15 +53,24 @@ func (sdkM *SdkManager) init() error {
 	return nil
 }
 
-func (sdkM *SdkManager) RegisterListener() {
-
-}
-
-func (sdkM *SdkManager) Run(configs ...models.Config) error {
+func (sdkM *SdkManager) Run(configs ...models.Config) ([]models.ParcellListener, error) {
 	if sdkM.configs == nil {
 		sdkM.configs = []models.Config{}
 	}
-	sdkM.configs = append(sdkM.configs, configs...)
+	var addIdConfigs []models.Config
+	for _, conf := range configs {
+		id, err := GenerateUniqueId(conf)
+		if err != nil {
+			log.Printf("err : %s", err.Error())
+			continue
+		}
+		addIdConfigs = append(addIdConfigs, models.Config{
+			Id:      id,
+			Mode:    conf.Mode,
+			Account: conf.Account,
+		})
+	}
+	sdkM.configs = append(sdkM.configs, addIdConfigs...)
 	sdkM.wg.Add(len(configs))
 	for i := 0; i < len(configs); i++ {
 		go func(config models.Config) {
@@ -133,4 +145,11 @@ func ExtractValidateCookies(cookies []models.Cookie) ([]models.Cookie, error) {
 	}
 	log.Printf("cookie leng %d", len(validCookies))
 	return validCookies, nil
+}
+
+func GenerateUniqueId(config models.Config) (string, error) {
+	if config.Account.Email == "" {
+		return "", fmt.Errorf("account is invalid")
+	}
+	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s_%s_%s", config.Account.Email, config.Mode.GetName(), time.Now().String()))), nil
 }

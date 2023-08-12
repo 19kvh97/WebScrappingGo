@@ -18,6 +18,7 @@ type Client struct {
 }
 
 type Job struct {
+	IParcell
 	Title         string    `json:"title"`
 	PriceType     PriceType `json:"price_type"`
 	Budget        string    `json:"budget"`
