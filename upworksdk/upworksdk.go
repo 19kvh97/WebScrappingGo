@@ -55,9 +55,9 @@ func (sdkM *SdkManager) init() error {
 }
 
 func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(models.IParcell)) {
-	for em, wk := range sdkM.Workers {
-		if em == email && wk.GetMode() == mode {
-			wk.Listener = listener
+	for em, worker := range sdkM.Workers {
+		if em == email && worker.GetMode() == mode {
+			worker.Listener = listener
 			break
 		}
 	}

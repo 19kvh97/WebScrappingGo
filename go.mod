@@ -3,7 +3,7 @@ module github.com/19kvh97/webscrappinggo
 go 1.18
 
 require (
-	github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230819153337-93230166813b
+	github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230819153551-4d15ca4023df
 	github.com/chromedp/chromedp v0.9.2
 )
 
