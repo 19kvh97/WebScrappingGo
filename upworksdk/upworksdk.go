@@ -21,7 +21,7 @@ import (
 type SdkManager struct {
 	configs []models.Config
 	wg      sync.WaitGroup
-	Workers map[string]*wk.Worker
+	Workers map[string]*wk.IWorker
 }
 
 var instance *SdkManager
