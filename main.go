@@ -46,6 +46,8 @@ func googleTask(ctx context.Context) {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	email := "hung"
+	password := "pass"
 	var rawCookie []models.Cookie
 	content, err := ioutil.ReadFile("hungkv_cookie.json")
 	if err != nil {
@@ -64,11 +66,19 @@ func main() {
 	uw.SdkInstance().Run(models.Config{
 		Mode: models.SYNC_BEST_MATCH,
 		Account: models.UpworkAccount{
-			Cookie: validCookie,
+			Email:    email,
+			Password: password,
+			Cookie:   validCookie,
 		},
 	})
+
+	uw.SdkInstance().RegisterListener(email, models.SYNC_BEST_MATCH, DataAvailable)
 
 	for {
 		time.Sleep(5 * time.Minute)
 	}
+}
+
+func DataAvailable(job models.Job) {
+	log.Println("received job")
 }

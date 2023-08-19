@@ -21,6 +21,7 @@ import (
 type SdkManager struct {
 	configs []models.Config
 	wg      sync.WaitGroup
+	Workers map[string]*wk.Worker
 }
 
 var instance *SdkManager
@@ -53,7 +54,16 @@ func (sdkM *SdkManager) init() error {
 	return nil
 }
 
-func (sdkM *SdkManager) Run(configs ...models.Config) ([]models.ParcellListener, error) {
+func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(models.IParcell)) {
+	for em, wk := range sdkM.Workers {
+		if em == email && wk.GetMode() == mode {
+			wk.Listener = listener
+			break
+		}
+	}
+}
+
+func (sdkM *SdkManager) Run(configs ...models.Config) error {
 	if sdkM.configs == nil {
 		sdkM.configs = []models.Config{}
 	}
@@ -75,10 +85,7 @@ func (sdkM *SdkManager) Run(configs ...models.Config) ([]models.ParcellListener,
 	for i := 0; i < len(configs); i++ {
 		go func(config models.Config) {
 			log.Printf("Running %s", config.Mode.GetName())
-			err := sdkM.newSession(config)
-			if err != nil {
-				log.Printf("Error from routine %s: %v", config.Mode.GetName(), err)
-			}
+			sdkM.newSession(config)
 			defer sdkM.wg.Done()
 		}(configs[i])
 	}
@@ -86,7 +93,7 @@ func (sdkM *SdkManager) Run(configs ...models.Config) ([]models.ParcellListener,
 	return nil
 }
 
-func (sdkM *SdkManager) newSession(config models.Config) error {
+func (sdkM *SdkManager) newSession(config models.Config) {
 	var worker wk.IWorker
 	switch config.Mode {
 	case models.SYNC_BEST_MATCH:
@@ -112,7 +119,7 @@ func (sdkM *SdkManager) newSession(config models.Config) error {
 	}
 	_, cancel := newChromedp(worker.PrepareTask())
 	defer cancel()
-	return nil
+	sdkM.Workers[config.Account.Email] = &worker
 }
 
 func newChromedp(worker func(context.Context)) (context.Context, context.CancelFunc) {

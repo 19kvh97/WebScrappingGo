@@ -82,6 +82,7 @@ func (bmw *BestMatchWorker) PrepareTask() func(context.Context) {
 
 					doc.Find("section.up-card-section.up-card-list-section.up-card-hover").Each(func(index int, info *goquery.Selection) {
 						job.ImportData(info)
+						bmw.SendResult(job)
 					})
 
 					return nil
