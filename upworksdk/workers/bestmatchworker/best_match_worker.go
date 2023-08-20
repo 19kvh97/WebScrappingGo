@@ -2,7 +2,6 @@ package bestmatchwoker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -67,9 +66,7 @@ func (bmw *BestMatchWorker) PrepareTask() func(context.Context) {
 			if err != nil {
 				log.Printf("error : %v", err)
 			}
-			log.Printf("get nodes : %d", len(nodes))
-			for i, node := range nodes {
-				log.Printf("Node[%d]", i)
+			for _, node := range nodes {
 				err = chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
 					res, err := dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
 					if err != nil {
@@ -89,9 +86,6 @@ func (bmw *BestMatchWorker) PrepareTask() func(context.Context) {
 				}))
 				if err != nil {
 					log.Printf("error : %v", err)
-				} else {
-					str, _ := json.Marshal(job)
-					log.Printf("Job : %s", str)
 				}
 			}
 			time.Sleep(1 * time.Minute)

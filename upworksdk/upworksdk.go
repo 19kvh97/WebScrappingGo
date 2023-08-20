@@ -21,7 +21,7 @@ import (
 type SdkManager struct {
 	configs []models.Config
 	wg      sync.WaitGroup
-	Workers map[string]*wk.IWorker
+	Workers map[string]wk.IWorker
 }
 
 var instance *SdkManager
@@ -54,19 +54,42 @@ func (sdkM *SdkManager) init() error {
 	return nil
 }
 
-func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(models.IParcell)) {
+func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(models.IParcell)) error {
+	log.Printf("worker leng : %d", len(sdkM.Workers))
 	for em, worker := range sdkM.Workers {
-		if em == email && worker.GetMode() == mode {
-			worker.Listener = listener
-			break
+		log.Printf("em : %s , email : %s", em, email)
+		if em == email {
+			log.Printf("runtime type %T", worker)
+			if bmWorker, ok := worker.(*bmw.BestMatchWorker); ok {
+				if bmWorker.GetMode() == mode && bmWorker.Listener == nil {
+					bmWorker.Listener = listener
+					return nil
+				}
+			} else if rcWorker, ok := worker.(*rw.RecentlyWorker); ok {
+				if rcWorker.GetMode() == mode && rcWorker.Listener == nil {
+					rcWorker.Listener = listener
+					return nil
+				}
+			} else if msWorker, ok := worker.(*mw.MessageWorker); ok {
+				if msWorker.GetMode() == mode && msWorker.Listener == nil {
+					msWorker.Listener = listener
+					return nil
+				}
+			}
 		}
 	}
+
+	return errors.New("failed to register listener. May listener registered")
 }
 
 func (sdkM *SdkManager) Run(configs ...models.Config) error {
 	if sdkM.configs == nil {
 		sdkM.configs = []models.Config{}
 	}
+	if sdkM.Workers == nil {
+		sdkM.Workers = make(map[string]wk.IWorker)
+	}
+
 	var addIdConfigs []models.Config
 	for _, conf := range configs {
 		id, err := GenerateUniqueId(conf)
@@ -90,7 +113,17 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 		}(configs[i])
 	}
 
-	return nil
+	for i := 0; i < 5; i++ {
+		time.Sleep(time.Second)
+		if len(sdkM.configs) == len(sdkM.Workers) {
+			for key := range sdkM.Workers {
+				log.Printf("email : %s", key)
+			}
+			return nil
+		}
+	}
+
+	return errors.New("run failed")
 }
 
 func (sdkM *SdkManager) newSession(config models.Config) {
@@ -117,9 +150,10 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 	default:
 		break
 	}
+	sdkM.Workers[config.Account.Email] = worker
+
 	_, cancel := newChromedp(worker.PrepareTask())
 	defer cancel()
-	sdkM.Workers[config.Account.Email] = &worker
 }
 
 func newChromedp(worker func(context.Context)) (context.Context, context.CancelFunc) {

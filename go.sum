@@ -1,9 +1,3 @@
-github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230812015638-621a04ff8a2e h1:9/uGmLGirqzPM0pgKUNRzuHAgbf8C4TPXOvN9Ng4K/I=
-github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230812015638-621a04ff8a2e/go.mod h1:s/QotzfOB6oDSNA3aCOiI7F0BLh10tJNfjpdQYq3H1E=
-github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230819153337-93230166813b h1:0kY5HYTVpuZhRyXToT27YoIxxjNY2ry4NumXzYBiiD8=
-github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230819153337-93230166813b/go.mod h1:s/QotzfOB6oDSNA3aCOiI7F0BLh10tJNfjpdQYq3H1E=
-github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230819153551-4d15ca4023df h1:BK/+bM688EcvzbDwrihsOhKKiWeg3TeYBsK8jsY88tM=
-github.com/19kvh97/webscrappinggo/upworksdk v0.0.0-20230819153551-4d15ca4023df/go.mod h1:s/QotzfOB6oDSNA3aCOiI7F0BLh10tJNfjpdQYq3H1E=
 github.com/PuerkitoBio/goquery v1.8.1 h1:uQxhNlArOIdbrH1tr0UXwdVFgDcZDrZVdcpygAcwmWM=
 github.com/PuerkitoBio/goquery v1.8.1/go.mod h1:Q8ICL1kNUJ2sXGoAhPGUdYDJvgQgHzJsnnd3H7Ho5jQ=
 github.com/andybalholm/cascadia v1.3.1/go.mod h1:R4bJ1UQfqADjvDa4P6HZHLh/3OxWWEqc0Sk8XGwHqvA=

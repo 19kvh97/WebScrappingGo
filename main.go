@@ -63,7 +63,7 @@ func main() {
 		panic(err)
 	}
 
-	uw.SdkInstance().Run(models.Config{
+	err = uw.SdkInstance().Run(models.Config{
 		Mode: models.SYNC_BEST_MATCH,
 		Account: models.UpworkAccount{
 			Email:    email,
@@ -72,13 +72,24 @@ func main() {
 		},
 	})
 
-	uw.SdkInstance().RegisterListener(email, models.SYNC_BEST_MATCH, DataAvailable)
+	if err != nil {
+		panic(err)
+	}
+
+	err = uw.SdkInstance().RegisterListener(email, models.SYNC_BEST_MATCH, DataAvailable)
+
+	if err != nil {
+		panic(err)
+	}
 
 	for {
 		time.Sleep(5 * time.Minute)
 	}
 }
 
-func DataAvailable(job models.Job) {
-	log.Println("received job")
+func DataAvailable(parcell models.IParcell) {
+	log.Println("received data")
+	if job, ok := parcell.(models.Job); ok {
+		log.Printf("Job title: %s", job.Title)
+	}
 }

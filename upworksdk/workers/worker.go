@@ -18,9 +18,17 @@ type Worker struct {
 	Listener func(models.IParcell)
 }
 
-func (w *Worker) SendResult(parsell models.IParcell) {
+func (w Worker) SendResult(parsell models.IParcell) {
 	if w.Listener != nil {
 		w.Listener(parsell)
 	}
 
+}
+
+func (w Worker) PrepareTask() func(context.Context) {
+	return func(ctx context.Context) {}
+}
+
+func (w Worker) GetMode() models.RunningMode {
+	return 0
 }

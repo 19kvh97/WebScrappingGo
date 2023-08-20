@@ -1,20 +1,46 @@
 [
     {
         "domain": ".upwork.com",
-        "expirationDate": 1691384227.607342,
+        "expirationDate": 1692499385.336748,
         "hostOnly": false,
         "httpOnly": true,
-        "name": "98cd47bsb",
+        "name": "e0d0933asb",
         "path": "/nx/find-work/",
         "sameSite": "unspecified",
         "secure": true,
         "session": false,
         "storeId": "0",
-        "value": "oauth2v2_b7dde1ad36f2744bb671802dd2a8339b"
+        "value": "oauth2v2_2da065176d7501e77a8187eacd8bb16b"
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1722855511.869665,
+        "expirationDate": 1692541566.649726,
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "82f2a195sb",
+        "path": "/nx/find-work/",
+        "sameSite": "unspecified",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "oauth2v2_da07187ae4eece5e1be11b14d3cd5e44"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1692548718.629099,
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "8aef5185sb",
+        "path": "/nx/find-work/",
+        "sameSite": "unspecified",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "oauth2v2_5e53dcfb76fa765541df222f649bf315"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1724019273.421952,
         "hostOnly": false,
         "httpOnly": false,
         "name": "visitor_id",
@@ -40,7 +66,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1699182559,
+        "expirationDate": 1700346320,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_cq_duid",
@@ -79,7 +105,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1722834560.023951,
+        "expirationDate": 1723998322.156675,
         "hostOnly": false,
         "httpOnly": true,
         "name": "spt",
@@ -92,7 +118,7 @@
     },
     {
         "domain": ".www.upwork.com",
-        "expirationDate": 1725857822.417643,
+        "expirationDate": 1727022296.943544,
         "hostOnly": false,
         "httpOnly": false,
         "name": "G_ENABLED_IDPS",
@@ -105,7 +131,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1699074561,
+        "expirationDate": 1700238321,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_rdt_uuid",
@@ -131,7 +157,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1699074561,
+        "expirationDate": 1700238323,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_fbp",
@@ -144,7 +170,7 @@
     },
     {
         "domain": ".www.upwork.com",
-        "expirationDate": 1725858561.776017,
+        "expirationDate": 1727022322.283572,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_zitok",
@@ -170,7 +196,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1701297827.416284,
+        "expirationDate": 1702462318.45815,
         "hostOnly": false,
         "httpOnly": false,
         "name": "recognized",
@@ -196,7 +222,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1722833818,
+        "expirationDate": 1723186810,
         "hostOnly": false,
         "httpOnly": false,
         "name": "__zlcmid",
@@ -274,7 +300,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1693976959.869633,
+        "expirationDate": 1695140721.421926,
         "hostOnly": false,
         "httpOnly": false,
         "name": "company_last_accessed",
@@ -287,7 +313,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1693976959.869647,
+        "expirationDate": 1695140721.421937,
         "hostOnly": false,
         "httpOnly": false,
         "name": "current_organization_uid",
@@ -326,19 +352,6 @@
     },
     {
         "domain": "www.upwork.com",
-        "expirationDate": 1691389411.385827,
-        "hostOnly": true,
-        "httpOnly": true,
-        "name": "__cflb",
-        "path": "/",
-        "sameSite": "no_restriction",
-        "secure": true,
-        "session": false,
-        "storeId": "0",
-        "value": "02DiuEXPXZVk436fJfSVuuwDqLqkhavJbkRioacEfhjdM"
-    },
-    {
-        "domain": "www.upwork.com",
         "expirationDate": 1725373557.758842,
         "hostOnly": true,
         "httpOnly": false,
@@ -352,7 +365,46 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1706636897.358507,
+        "expirationDate": 1726210809.587379,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "_ga_SB157S2R94",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": false,
+        "session": false,
+        "storeId": "0",
+        "value": "GS1.2.1691650724.17.1.1691650809.60.0.0"
+    },
+    {
+        "domain": "www.upwork.com",
+        "expirationDate": 1692689605.276323,
+        "hostOnly": true,
+        "httpOnly": true,
+        "name": "__cflb",
+        "path": "/",
+        "sameSite": "no_restriction",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "02DiuEXPXZVk436fJfSVuuwDqLqkhavJbGWFRFoxEj5L7"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1692548720,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "_gid",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": false,
+        "session": false,
+        "storeId": "0",
+        "value": "GA1.2.642642419.1692174958"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1707905851.276534,
         "hostOnly": false,
         "httpOnly": false,
         "name": "umq",
@@ -362,6 +414,84 @@
         "session": false,
         "storeId": "0",
         "value": "1920"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1692499552.567718,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "profile_vv_gql_token",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "oauth2v2_17277e137b82cf22d67483ddc31cbbee"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1692499384.568033,
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "fe6f4f4sb",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "oauth2v2_01ef645a0354b4c17980d3a0eac7eecb"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1692499554.74898,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "att_vt",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "oauth2v2_f2b70f7d2001b45e3dcf027fe8070ea3"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1692499384.749001,
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "7a53400asb",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "oauth2v2_8b026893bc5e3ca1dd7f15ee961c08b4"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1692499635.526339,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "vjd_gql_token",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "oauth2v2_01ac606a871fec7259ce6d5a17b2a929"
+    },
+    {
+        "domain": "www.upwork.com",
+        "expirationDate": 1692523920,
+        "hostOnly": true,
+        "httpOnly": false,
+        "name": "ln_or",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": false,
+        "session": false,
+        "storeId": "0",
+        "value": "eyI2MzgxNCI6ImQifQ%3D%3D"
     },
     {
         "domain": ".upwork.com",
@@ -401,7 +531,7 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1691299604.859076,
+        "expirationDate": 1692464095.30106,
         "hostOnly": false,
         "httpOnly": true,
         "name": "__cf_bm",
@@ -410,7 +540,7 @@
         "secure": true,
         "session": false,
         "storeId": "0",
-        "value": "FjoCdY4aKfk4FEUgIEQbIYCV2_Q.Cjns8SWeSIDEvfE-1691297803-0-AW+nnGG6uObsQ8ngZhKMW4BZE9zBwk5/uydl56SPW9/hd8KjmkcTca2WQB/xTou7VlpFxNh7qTsJRKJ1xjw0VFU="
+        "value": "1E162FTGQHZ60ovcZTzk5GMD.Fzju1fQqYuZTPn3VjU-1692462294-0-Adfj3sGr2Kw+cLZAl/V9WhsuQRjlErWvhMOeNQjZYQkNwmQ/SCNf718K/sBEQc4rUWhpZJ8A94yKpgn2LoTOjHU="
     },
     {
         "domain": ".upwork.com",
@@ -422,11 +552,11 @@
         "secure": true,
         "session": true,
         "storeId": "0",
-        "value": "wpGV4ck.kYwWxaNWMAdXEODle_OIYDLX_gNujrUfp2Q-1691297803267-0-604800000"
+        "value": "Ujx6g085gZTEUGr1n_xh0aOs29B81eGWLMmFxtlnfTw-1692462294896-0-604800000"
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1691302126,
+        "expirationDate": 1692466616,
         "hostOnly": false,
         "httpOnly": false,
         "name": "ftr_blst_1h",
@@ -435,11 +565,36 @@
         "secure": false,
         "session": false,
         "storeId": "0",
-        "value": "1691297806216"
+        "value": "1692462296458"
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1691300359,
+        "expirationDate": 1692548696.69422,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "asct_vt",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "oauth2v2_fe316b5ad276ebe1a46014ab0fa4856a"
+    },
+    {
+        "domain": ".upwork.com",
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "_cq_suid",
+        "path": "/",
+        "sameSite": "no_restriction",
+        "secure": true,
+        "session": true,
+        "storeId": "0",
+        "value": "1.1692462296.MSj9vgvDjp57oY0g"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1692464121,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_upw_ses.5831",
@@ -452,41 +607,16 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1691384959,
+        "expirationDate": 1692462356,
         "hostOnly": false,
         "httpOnly": false,
-        "name": "_gid",
+        "name": "_dc_gtm_UA-62227314-1",
         "path": "/",
         "sameSite": "unspecified",
         "secure": false,
         "session": false,
         "storeId": "0",
-        "value": "GA1.2.1402496514.1691297807"
-    },
-    {
-        "domain": ".upwork.com",
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "_cq_suid",
-        "path": "/",
-        "sameSite": "no_restriction",
-        "secure": true,
-        "session": true,
-        "storeId": "0",
-        "value": "1.1691297806.VJJ0JKdq3qYysIKe"
-    },
-    {
-        "domain": "www.upwork.com",
-        "expirationDate": 1691384207,
-        "hostOnly": true,
-        "httpOnly": false,
-        "name": "ln_or",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": false,
-        "session": false,
-        "storeId": "0",
-        "value": "eyI2MzgxNCI6ImQifQ%3D%3D"
+        "value": "1"
     },
     {
         "domain": ".upwork.com",
@@ -499,32 +629,6 @@
         "session": true,
         "storeId": "0",
         "value": "upwork.com"
-    },
-    {
-        "domain": ".upwork.com",
-        "expirationDate": 1725857819.079716,
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "_ga_SB157S2R94",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": false,
-        "session": false,
-        "storeId": "0",
-        "value": "GS1.2.1691297819.16.0.1691297819.60.0.0"
-    },
-    {
-        "domain": ".upwork.com",
-        "expirationDate": 1691384222.318525,
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "asct_vt",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": true,
-        "session": false,
-        "storeId": "0",
-        "value": "oauth2v2_161222e09e9837b711a485ac60eb566b"
     },
     {
         "domain": ".upwork.com",
@@ -560,7 +664,7 @@
         "secure": true,
         "session": true,
         "storeId": "0",
-        "value": "b986fe8f.oauth2v2_dc578437a8b3aa988caedc79a58f4d7a"
+        "value": "b986fe8f.oauth2v2_50c4c959c6f60514c71407eedf37d261"
     },
     {
         "domain": ".upwork.com",
@@ -572,7 +676,7 @@
         "secure": true,
         "session": true,
         "storeId": "0",
-        "value": "oauth2v2_0e220d62c543a07ddf0d07a499bc6775"
+        "value": "oauth2v2_a3f522774a7a299231fb505c9fda536d"
     },
     {
         "domain": ".upwork.com",
@@ -584,48 +688,11 @@
         "secure": true,
         "session": true,
         "storeId": "0",
-        "value": "513c6892598579da4091c89cf34890dd16c771044295470c3dfc2e218f631d8b"
+        "value": "1b1c9dab239246b86d21d4cdeb0d43613de06d64845b4caf5c25a62548941594"
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1691380626.877126,
-        "hostOnly": false,
-        "httpOnly": true,
-        "name": "user_oauth2_slave_access_token",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": true,
-        "session": false,
-        "storeId": "0",
-        "value": "b986fe8f.oauth2v2_dc578437a8b3aa988caedc79a58f4d7a:1248534841738477568.oauth2v2_53bae148171ed860acd6105ab535c416"
-    },
-    {
-        "domain": ".upwork.com",
-        "hostOnly": false,
-        "httpOnly": true,
-        "name": "lithiumSSO:bpyhf24739",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": false,
-        "session": true,
-        "storeId": "0",
-        "value": "~2Aa8N8zGwqcfhliI3~SM-GU6yqBqcdNFssGRD21k1Qp-nAkUMNeN60F2Sn4jZqqwtkgftpi9uZBgeSYmCCMo5KIouPwNOCC1xA7u3Mooy6PvZaIengnk7xhubuF_mLh1FBLWprLWMVD3kwcdfxU_5nzzhVeDBCRvs3i8b9JZPjc8akmJtZSvaS2YLT6cYCB1MMSIC70Oc-yymuwDgVTmy0QZ-tQtWt38F5lE5GKj9AcPWg4SR9wcTIt17yW8JQbcSIirb58ryjI6VY_ks9ahRLslcg4b9bVkbeRxStxBT9N8vZ2yP-vOTQFo_vKzvBZ3nhBi3MfOeLEaWggKXSTRKj5LmJ7H6x-9PZPMdifZaZh_UD3T8AI7DqF6aJnBLkEzuxFhebw7ESrYV7bRpWgoX4atM90GoyvLvrLwh15EU0ec-9kI0fo47HbEViRizUfUM29AaSjuRnVtpq2mfLuUGXj0GFqiuB-1lwQLWRVef3R5_QNWiDWqq7JtQsUV3cLmuSBGVsPpYsUPLCv61vGBLNjIU_GD_g8Io8-V3-bKnHrmvXtHaiLilvgioDiroJBujaebSimgo5k6Gxpd6LDf2MynCz4g0wvmv-9WrPTC4a2hZxaxlUNV69DximZDcr7wIJRPv_-TrgdGySvyHj"
-    },
-    {
-        "domain": ".upwork.com",
-        "hostOnly": false,
-        "httpOnly": true,
-        "name": "!lithiumSSO",
-        "path": "/",
-        "sameSite": "no_restriction",
-        "secure": true,
-        "session": true,
-        "storeId": "0",
-        "value": "~2Aa8N8zGwqcfhliI3~SM-GU6yqBqcdNFssGRD21k1Qp-nAkUMNeN60F2Sn4jZqqwtkgftpi9uZBgeSYmCCMo5KIouPwNOCC1xA7u3Mooy6PvZaIengnk7xhubuF_mLh1FBLWprLWMVD3kwcdfxU_5nzzhVeDBCRvs3i8b9JZPjc8akmJtZSvaS2YLT6cYCB1MMSIC70Oc-yymuwDgVTmy0QZ-tQtWt38F5lE5GKj9AcPWg4SR9wcTIt17yW8JQbcSIirb58ryjI6VY_ks9ahRLslcg4b9bVkbeRxStxBT9N8vZ2yP-vOTQFo_vKzvBZ3nhBi3MfOeLEaWggKXSTRKj5LmJ7H6x-9PZPMdifZaZh_UD3T8AI7DqF6aJnBLkEzuxFhebw7ESrYV7bRpWgoX4atM90GoyvLvrLwh15EU0ec-9kI0fo47HbEViRizUfUM29AaSjuRnVtpq2mfLuUGXj0GFqiuB-1lwQLWRVef3R5_QNWiDWqq7JtQsUV3cLmuSBGVsPpYsUPLCv61vGBLNjIU_GD_g8Io8-V3-bKnHrmvXtHaiLilvgioDiroJBujaebSimgo5k6Gxpd6LDf2MynCz4g0wvmv-9WrPTC4a2hZxaxlUNV69DximZDcr7wIJRPv_-TrgdGySvyHj"
-    },
-    {
-        "domain": ".upwork.com",
-        "expirationDate": 1722834559,
+        "expirationDate": 1723998320,
         "hostOnly": false,
         "httpOnly": false,
         "name": "OptanonConsent",
@@ -634,59 +701,7 @@
         "secure": false,
         "session": false,
         "storeId": "0",
-        "value": "isGpcEnabled=0&datestamp=Sun+Aug+06+2023+12%3A09%3A19+GMT%2B0700+(Indochina+Time)&version=202305.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=0527c32b-1503-4e1f-917a-658abede1223&interactionCount=2&landingPath=NotLandingPage&groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0004%3A1&AwaitingReconsent=false&geolocation=VN%3BHN"
-    },
-    {
-        "domain": ".upwork.com",
-        "expirationDate": 1691298619,
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "_dc_gtm_UA-62227314-1",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": false,
-        "session": false,
-        "storeId": "0",
-        "value": "1"
-    },
-    {
-        "domain": ".upwork.com",
-        "expirationDate": 1725858559.286959,
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "_ga_KSM221PNDX",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": false,
-        "session": false,
-        "storeId": "0",
-        "value": "GS1.1.1691297806.139.1.1691298559.0.0.0"
-    },
-    {
-        "domain": ".upwork.com",
-        "expirationDate": 1725858559.287239,
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "_ga",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": false,
-        "session": false,
-        "storeId": "0",
-        "value": "GA1.1.1663573506.1686975374"
-    },
-    {
-        "domain": ".upwork.com",
-        "expirationDate": 1725858559.464994,
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "_upw_id.5831",
-        "path": "/",
-        "sameSite": "no_restriction",
-        "secure": true,
-        "session": false,
-        "storeId": "0",
-        "value": "909b6676-b340-499e-bf7f-38083afb05d4.1686975374.139.1691298559.1691156109.d465e2ed-83f3-44ca-b01c-f4b0b5dedccc.7bb99d4f-c216-4ccb-89ae-66658bde47fe.d8a544bc-d700-4221-a123-5c9b85d82cd1.1691297806507.50"
+        "value": "isGpcEnabled=0&datestamp=Sat+Aug+19+2023+23%3A25%3A20+GMT%2B0700+(Indochina+Time)&version=202305.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=0527c32b-1503-4e1f-917a-658abede1223&interactionCount=2&landingPath=NotLandingPage&groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0004%3A1&AwaitingReconsent=false&geolocation=VN%3BHN"
     },
     {
         "domain": ".upwork.com",
@@ -698,33 +713,20 @@
         "secure": true,
         "session": true,
         "storeId": "0",
-        "value": "7dcf1458197fe803b69f36d0c427c497"
+        "value": "de55e860b25ef01dcd1e90413330d03b"
     },
     {
-        "domain": "www.upwork.com",
-        "expirationDate": 1691903360.023889,
-        "hostOnly": true,
-        "httpOnly": false,
-        "name": "AWSALB",
+        "domain": ".upwork.com",
+        "expirationDate": 1692545118.421961,
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "user_oauth2_slave_access_token",
         "path": "/",
         "sameSite": "unspecified",
-        "secure": false,
-        "session": false,
-        "storeId": "0",
-        "value": "Hqk+crFmOpZp8jIWQjIDwxOkPTn38jTwLhXP80TkJXN7wJ0WazGjYeZBoyGXkDrgTgzpgteamNWvyG5LkfC74Pd6afZj34wJqkSS8qNbngpffLaGaXmuYK7hkI8o"
-    },
-    {
-        "domain": "www.upwork.com",
-        "expirationDate": 1691903360.023937,
-        "hostOnly": true,
-        "httpOnly": false,
-        "name": "AWSALBCORS",
-        "path": "/",
-        "sameSite": "no_restriction",
         "secure": true,
         "session": false,
         "storeId": "0",
-        "value": "Hqk+crFmOpZp8jIWQjIDwxOkPTn38jTwLhXP80TkJXN7wJ0WazGjYeZBoyGXkDrgTgzpgteamNWvyG5LkfC74Pd6afZj34wJqkSS8qNbngpffLaGaXmuYK7hkI8o"
+        "value": "b986fe8f.oauth2v2_50c4c959c6f60514c71407eedf37d261:1248534841738477568.oauth2v2_bca82b7263578f8ae3d80c827d0bcf0e"
     },
     {
         "domain": ".upwork.com",
@@ -736,11 +738,11 @@
         "secure": false,
         "session": true,
         "storeId": "0",
-        "value": "1691298560426%7C0%7C1691298560426%7C%7C"
+        "value": "1692462321535%7C0%7C1692462321535%7C%7C"
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1691384960,
+        "expirationDate": 1692548721,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_uetsid",
@@ -749,11 +751,11 @@
         "secure": false,
         "session": false,
         "storeId": "0",
-        "value": "a5ff19d0341511eeb961fd453287e97f"
+        "value": "ed4cd2b03c0f11ee88164ff38ec1ff02"
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1724994560,
+        "expirationDate": 1726158321,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_uetvid",
@@ -766,7 +768,46 @@
     },
     {
         "domain": ".upwork.com",
-        "expirationDate": 1725858561,
+        "expirationDate": 1727022321.571448,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "_ga_KSM221PNDX",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": false,
+        "session": false,
+        "storeId": "0",
+        "value": "GS1.1.1692462298.178.1.1692462321.0.0.0"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1727022321.571648,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "_ga",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": false,
+        "session": false,
+        "storeId": "0",
+        "value": "GA1.1.1663573506.1686975374"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1727022321.645153,
+        "hostOnly": false,
+        "httpOnly": false,
+        "name": "_upw_id.5831",
+        "path": "/",
+        "sameSite": "no_restriction",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "909b6676-b340-499e-bf7f-38083afb05d4.1686975374.177.1692462322.1692455245.e1d0ff10-ced1-48c0-820f-17b7786fda1e.39ad7588-0177-46bf-bc52-8ab0c6bea944.5935e06c-8f17-4a14-bef3-8c68fcdd13e2.1692462296920.17"
+    },
+    {
+        "domain": ".upwork.com",
+        "expirationDate": 1727022321,
         "hostOnly": false,
         "httpOnly": false,
         "name": "forterToken",
@@ -775,7 +816,7 @@
         "secure": false,
         "session": false,
         "storeId": "0",
-        "value": "80a9e0d30451401da8deb33186371dd9_1691298559080__UDF43-m4_14ck"
+        "value": "80a9e0d30451401da8deb33186371dd9_1692462320575__UDF43-m4_14ck"
     },
     {
         "domain": "www.upwork.com",
@@ -787,6 +828,32 @@
         "secure": true,
         "session": true,
         "storeId": "0",
-        "value": "!CI10270Air2Dot5QTAllocations,!MP16400Air3Migration,!CI12577UniversalSearch,!pxFAA3,!pxTHA3,!pxGPA3,!air2Dot76Qt,!SSINavUser,!TONB3476Air3Migration,i18nOn,pxCTA3,!pxWTA3,TONB2256Air3Migration,CI9570Air2Dot5,!CI10857Air3Dot0,!pxBPA3,CI11132Air2Dot75,OTBnrOn,air2Dot76"
+        "value": "!TONB3476Air3Migration,!JPAir3,!RMTAir3Talent,!air2Dot76Qt,!CI10270Air2Dot5QTAllocations,!CI10857Air3Dot0,CI11132Air2Dot75,air2Dot76,CI9570Air2Dot5,!pxWTA3,!SSINavUser,!MP16400Air3Migration,i18nOn,OTBnrOn,!CI12577UniversalSearch,!pxFAA3,!pxBPA3,TONB2256Air3Migration,!pxGPA3,pxTHA3"
+    },
+    {
+        "domain": "www.upwork.com",
+        "expirationDate": 1693067122.156282,
+        "hostOnly": true,
+        "httpOnly": false,
+        "name": "AWSALB",
+        "path": "/",
+        "sameSite": "unspecified",
+        "secure": false,
+        "session": false,
+        "storeId": "0",
+        "value": "zIMPw1CBzlGPkGrBkxZSRxVKPtM3OTvMkCv7dFj2eh1ecTlM0mX8XW0p5uwU6IrL9HVAiEWbMMK6rhanDTT5Y6v6UN2EUxYTMgZB7ZRGmC+rABc50AAF9J96gR+F"
+    },
+    {
+        "domain": "www.upwork.com",
+        "expirationDate": 1693067122.156544,
+        "hostOnly": true,
+        "httpOnly": false,
+        "name": "AWSALBCORS",
+        "path": "/",
+        "sameSite": "no_restriction",
+        "secure": true,
+        "session": false,
+        "storeId": "0",
+        "value": "zIMPw1CBzlGPkGrBkxZSRxVKPtM3OTvMkCv7dFj2eh1ecTlM0mX8XW0p5uwU6IrL9HVAiEWbMMK6rhanDTT5Y6v6UN2EUxYTMgZB7ZRGmC+rABc50AAF9J96gR+F"
     }
 ]
