@@ -3,14 +3,15 @@ package models
 type RunningMode int
 
 const (
-	SYNC_BEST_MATCH RunningMode = iota
+	UNKNOWN RunningMode = iota
+	SYNC_BEST_MATCH
 	SYNC_RECENTLY
 	SYNC_MESSAGE
 )
 
 func (rm *RunningMode) GetName() string {
 	return []string{
-		"SYNC_BEST_MATCH", "SYNC_RECENTLY", "SYNC_MESSAGE",
+		"UNKNOWN", "SYNC_BEST_MATCH", "SYNC_RECENTLY", "SYNC_MESSAGE",
 	}[*rm]
 }
 

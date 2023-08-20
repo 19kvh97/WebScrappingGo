@@ -12,9 +12,8 @@ import (
 
 	"github.com/19kvh97/webscrappinggo/upworksdk/models"
 	wk "github.com/19kvh97/webscrappinggo/upworksdk/workers"
-	bmw "github.com/19kvh97/webscrappinggo/upworksdk/workers/bestmatchworker"
+	jw "github.com/19kvh97/webscrappinggo/upworksdk/workers/jobworker"
 	mw "github.com/19kvh97/webscrappinggo/upworksdk/workers/messageworker"
-	rw "github.com/19kvh97/webscrappinggo/upworksdk/workers/recentlyworker"
 	"github.com/chromedp/chromedp"
 )
 
@@ -60,14 +59,9 @@ func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, 
 		log.Printf("em : %s , email : %s", em, email)
 		if em == email {
 			log.Printf("runtime type %T", worker)
-			if bmWorker, ok := worker.(*bmw.BestMatchWorker); ok {
+			if bmWorker, ok := worker.(*jw.JobWorker); ok {
 				if bmWorker.GetMode() == mode && bmWorker.Listener == nil {
 					bmWorker.Listener = listener
-					return nil
-				}
-			} else if rcWorker, ok := worker.(*rw.RecentlyWorker); ok {
-				if rcWorker.GetMode() == mode && rcWorker.Listener == nil {
-					rcWorker.Listener = listener
 					return nil
 				}
 			} else if msWorker, ok := worker.(*mw.MessageWorker); ok {
@@ -130,13 +124,15 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 	var worker wk.IWorker
 	switch config.Mode {
 	case models.SYNC_BEST_MATCH:
-		worker = &bmw.BestMatchWorker{
+		worker = &jw.JobWorker{
+			Mode: models.SYNC_BEST_MATCH,
 			Worker: wk.Worker{
 				Account: config.Account,
 			},
 		}
 	case models.SYNC_RECENTLY:
-		worker = &rw.RecentlyWorker{
+		worker = &jw.JobWorker{
+			Mode: models.SYNC_RECENTLY,
 			Worker: wk.Worker{
 				Account: config.Account,
 			},
@@ -152,7 +148,12 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 	}
 	sdkM.Workers[config.Account.Email] = worker
 
-	_, cancel := newChromedp(worker.PrepareTask())
+	runner, err := worker.PrepareTask()
+	if err != nil {
+		panic(err)
+	}
+
+	_, cancel := newChromedp(runner)
 	defer cancel()
 }
 

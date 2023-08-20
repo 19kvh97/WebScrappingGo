@@ -21,7 +21,7 @@ func (mw *MessageWorker) GetMode() md.RunningMode {
 	return md.SYNC_MESSAGE
 }
 
-func (mw *MessageWorker) PrepareTask() func(context.Context) {
+func (mw *MessageWorker) PrepareTask() (func(context.Context), error) {
 	return func(ctx context.Context) {
 		cookies := mw.Account.Cookie
 
@@ -52,5 +52,5 @@ func (mw *MessageWorker) PrepareTask() func(context.Context) {
 		if err := chromedp.Run(ctx, tasks); err != nil {
 			fmt.Println(err)
 		}
-	}
+	}, nil
 }

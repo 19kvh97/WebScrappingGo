@@ -7,7 +7,7 @@ import (
 )
 
 type IWorker interface {
-	PrepareTask() func(context.Context)
+	PrepareTask() (func(context.Context), error)
 	GetMode() models.RunningMode
 	SendResult(models.IParcell)
 }
@@ -25,8 +25,8 @@ func (w Worker) SendResult(parsell models.IParcell) {
 
 }
 
-func (w Worker) PrepareTask() func(context.Context) {
-	return func(ctx context.Context) {}
+func (w Worker) PrepareTask() (func(context.Context), error) {
+	return func(ctx context.Context) {}, nil
 }
 
 func (w Worker) GetMode() models.RunningMode {

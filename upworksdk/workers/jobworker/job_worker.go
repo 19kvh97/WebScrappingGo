@@ -1,8 +1,8 @@
-package recentlyworker
+package bestmatchwoker
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -17,19 +17,24 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-type RecentlyWorker struct {
+type JobWorker struct {
 	wk.Worker
+	Mode md.RunningMode
 }
 
-func (rw *RecentlyWorker) GetMode() md.RunningMode {
-	return md.SYNC_RECENTLY
+func (jw *JobWorker) GetMode() md.RunningMode {
+	return jw.Mode
 }
 
-func (rw *RecentlyWorker) PrepareTask() func(context.Context) {
+func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
+	if jw.Mode == md.UNKNOWN {
+		return nil, errors.New("invalid RunningMode")
+	}
 	return func(ctx context.Context) {
-		cookies := rw.Account.Cookie
+		cookies := jw.Account.Cookie
 
-		runningmode := rw.GetMode()
+		runningmode := jw.GetMode()
+
 		log.Printf("cookies length in PrepareTask %d", len(cookies))
 		tasks := chromedp.Tasks{
 			chromedp.ActionFunc(func(ctx context.Context) error {
@@ -51,7 +56,6 @@ func (rw *RecentlyWorker) PrepareTask() func(context.Context) {
 
 			// navigate to site
 			chromedp.Navigate(runningmode.GetLink()),
-			chromedp.Sleep(30 * time.Second),
 		}
 		if err := chromedp.Run(ctx, tasks); err != nil {
 			fmt.Println(err)
@@ -67,9 +71,7 @@ func (rw *RecentlyWorker) PrepareTask() func(context.Context) {
 			if err != nil {
 				log.Printf("error : %v", err)
 			}
-			log.Printf("get nodes : %d", len(nodes))
-			for i, node := range nodes {
-				log.Printf("Node[%d]", i)
+			for _, node := range nodes {
 				err = chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
 					res, err := dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
 					if err != nil {
@@ -82,18 +84,16 @@ func (rw *RecentlyWorker) PrepareTask() func(context.Context) {
 
 					doc.Find("section.up-card-section.up-card-list-section.up-card-hover").Each(func(index int, info *goquery.Selection) {
 						job.ImportData(info)
+						jw.SendResult(job)
 					})
 
 					return nil
 				}))
 				if err != nil {
 					log.Printf("error : %v", err)
-				} else {
-					str, _ := json.Marshal(job)
-					log.Printf("Job : %s", str)
 				}
 			}
 			time.Sleep(1 * time.Minute)
 		}
-	}
+	}, nil
 }
