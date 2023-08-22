@@ -88,8 +88,7 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 	for _, conf := range configs {
 		id, err := GenerateUniqueId(conf)
 		if err != nil {
-			log.Printf("err : %s", err.Error())
-			continue
+			panic(err)
 		}
 		addIdConfigs = append(addIdConfigs, models.Config{
 			Id:      id,
@@ -191,7 +190,7 @@ func ExtractValidateCookies(cookies []models.Cookie) ([]models.Cookie, error) {
 
 func GenerateUniqueId(config models.Config) (string, error) {
 	if config.Account.Email == "" {
-		return "", fmt.Errorf("account is invalid")
+		return "", fmt.Errorf("account is invalid, email must not be empty")
 	}
 	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s_%s_%s", config.Account.Email, config.Mode.GetName(), time.Now().String()))), nil
 }
