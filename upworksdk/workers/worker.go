@@ -15,12 +15,12 @@ type IWorker interface {
 type Worker struct {
 	IWorker
 	Account  models.UpworkAccount
-	Listener func(models.IParcell)
+	Listener func(string, models.IParcell)
 }
 
 func (w Worker) SendResult(parsell models.IParcell) {
 	if w.Listener != nil {
-		w.Listener(parsell)
+		w.Listener(w.Account.Email, parsell)
 	}
 
 }

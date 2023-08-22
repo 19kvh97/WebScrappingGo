@@ -53,7 +53,7 @@ func (sdkM *SdkManager) init() error {
 	return nil
 }
 
-func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(models.IParcell)) error {
+func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(string, models.IParcell)) error {
 	log.Printf("worker leng : %d", len(sdkM.Workers))
 	for em, worker := range sdkM.Workers {
 		log.Printf("em : %s , email : %s", em, email)

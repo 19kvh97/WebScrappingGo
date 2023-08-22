@@ -88,7 +88,7 @@ func main() {
 	}
 }
 
-func DataAvailable(parcell models.IParcell) {
+func DataAvailable(email string, parcell models.IParcell) {
 	log.Println("received data")
 	if job, ok := parcell.(models.Job); ok {
 		log.Printf("Job title: %s", job.Title)
