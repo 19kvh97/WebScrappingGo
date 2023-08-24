@@ -32,3 +32,8 @@ type Job struct {
 func (job *Job) ImportData(info *goquery.Selection) {
 	job.Title = info.Find(".up-n-link").Text()
 }
+
+func (job *Job) ToString() string {
+	tempalteString := "<b>{{.Title}}</b>\n    {{.Description}}\n    "
+	return ""
+}
