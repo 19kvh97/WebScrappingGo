@@ -65,7 +65,7 @@ func main() {
 	}
 
 	err = uw.SdkInstance().Run(models.Config{
-		Mode: models.SYNC_RECENTLY,
+		Mode: models.LOGIN_AS_CREDENTICAL,
 		Account: models.UpworkAccount{
 			Email:    email,
 			Password: password,
@@ -77,11 +77,11 @@ func main() {
 		panic(err)
 	}
 
-	err = uw.SdkInstance().RegisterListener(email, models.SYNC_RECENTLY, DataAvailable)
+	// err = uw.SdkInstance().RegisterListener(email, models.LOGIN_AS_CREDENTICAL, DataAvailable)
 
-	if err != nil {
-		panic(err)
-	}
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	for {
 		time.Sleep(5 * time.Minute)

@@ -1,4 +1,4 @@
-package bestmatchwoker
+package jobworker
 
 import (
 	"context"

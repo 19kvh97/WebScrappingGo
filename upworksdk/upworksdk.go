@@ -13,6 +13,7 @@ import (
 	"github.com/19kvh97/webscrappinggo/upworksdk/models"
 	wk "github.com/19kvh97/webscrappinggo/upworksdk/workers"
 	jw "github.com/19kvh97/webscrappinggo/upworksdk/workers/jobworker"
+	lw "github.com/19kvh97/webscrappinggo/upworksdk/workers/loginworker"
 	mw "github.com/19kvh97/webscrappinggo/upworksdk/workers/messageworker"
 	"github.com/chromedp/chromedp"
 )
@@ -141,6 +142,13 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 			Worker: wk.Worker{
 				Account: config.Account,
 			},
+		}
+	case models.LOGIN_AS_CREDENTICAL, models.LOGIN_AS_GOOGLE:
+		worker = &lw.LoginWorker{
+			Worker: wk.Worker{
+				Account: config.Account,
+			},
+			Mode: config.Mode,
 		}
 	default:
 		break
