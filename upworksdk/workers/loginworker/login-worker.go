@@ -34,9 +34,41 @@ func (jw *LoginWorker) PrepareTask() (func(context.Context), error) {
 
 		runningmode := jw.GetMode()
 
+		// if err := chromedp.Run(ctx, chromedp.Navigate(runningmode.GetLink())); err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		// isElementEnabled := func(ctx context.Context) (bool, error) {
+		// 	var isDisabled bool
+		// 	var nodes []*cdp.Node
+		// 	err := chromedp.Run(ctx, chromedp.Nodes(`#login_username:[disabled]`, &nodes))
+		// 	if err != nil {
+		// 		return false, err
+		// 	}
+		// 	if len(nodes) > 0 {
+		// 		isDisabled = true
+		// 	}
+		// 	return !isDisabled, nil
+		// }
+
+		// for i := 0; i < 10; i++ {
+		// 	enabled, err := isElementEnabled(ctx)
+		// 	if err != nil {
+		// 		log.Printf("error : %s", err.Error())
+		// 	}
+		// 	if enabled {
+		// 		break
+		// 	}
+		// 	time.Sleep(2 * time.Second)
+
+		// 	if i == 9 {
+		// 		return
+		// 	}
+		// }
+
 		tasks := chromedp.Tasks{
-			// navigate to site
 			chromedp.Navigate(runningmode.GetLink()),
+			chromedp.WaitEnabled("login_username", chromedp.ByID),
 			chromedp.SendKeys(emailXPath, jw.Account.Email),
 			chromedp.Sleep(2 * time.Second),
 			chromedp.Click(continueBtnXPath),
@@ -46,6 +78,7 @@ func (jw *LoginWorker) PrepareTask() (func(context.Context), error) {
 			chromedp.Click(loginXPath),
 			chromedp.Sleep(2 * time.Second),
 		}
+
 		if err := chromedp.Run(ctx, tasks); err != nil {
 			fmt.Println(err)
 		}

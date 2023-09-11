@@ -47,8 +47,8 @@ func googleTask(ctx context.Context) {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	email := "hung"
-	password := "pass"
+	email := "hung.kv22011997@gmail.com"
+	password := "Kimvanhung1997"
 	var rawCookie []models.Cookie
 	content, err := ioutil.ReadFile("hungkv_cookie.json")
 	if err != nil {
