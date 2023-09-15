@@ -11,6 +11,7 @@ import (
 	wk "github.com/19kvh97/webscrappinggo/upworksdk/workers"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
+	"github.com/xlzd/gotp"
 )
 
 type LoginWorker struct {
@@ -31,40 +32,11 @@ func (jw *LoginWorker) PrepareTask() (func(context.Context), error) {
 		continueBtnXPath := "//*[@id='login_password_continue']"
 		passwordXPath := "//*[@id='login_password']"
 		loginXPath := "//*[@id='login_control_continue']"
+		keepSessionXPath := "//*[@id='login']/div/div/div[1]/div[5]/div/div[1]/div/label/span"
+		otpXPath := "//*[@id='deviceAuthOtp_otp']"
+		nextXPath := "//*[@id='next_continue']"
 
 		runningmode := jw.GetMode()
-
-		// if err := chromedp.Run(ctx, chromedp.Navigate(runningmode.GetLink())); err != nil {
-		// 	fmt.Println(err)
-		// }
-
-		// isElementEnabled := func(ctx context.Context) (bool, error) {
-		// 	var isDisabled bool
-		// 	var nodes []*cdp.Node
-		// 	err := chromedp.Run(ctx, chromedp.Nodes(`#login_username:[disabled]`, &nodes))
-		// 	if err != nil {
-		// 		return false, err
-		// 	}
-		// 	if len(nodes) > 0 {
-		// 		isDisabled = true
-		// 	}
-		// 	return !isDisabled, nil
-		// }
-
-		// for i := 0; i < 10; i++ {
-		// 	enabled, err := isElementEnabled(ctx)
-		// 	if err != nil {
-		// 		log.Printf("error : %s", err.Error())
-		// 	}
-		// 	if enabled {
-		// 		break
-		// 	}
-		// 	time.Sleep(2 * time.Second)
-
-		// 	if i == 9 {
-		// 		return
-		// 	}
-		// }
 
 		tasks := chromedp.Tasks{
 			chromedp.Navigate(runningmode.GetLink()),
@@ -74,16 +46,36 @@ func (jw *LoginWorker) PrepareTask() (func(context.Context), error) {
 			chromedp.Click(continueBtnXPath),
 			chromedp.Sleep(2 * time.Second),
 			chromedp.SendKeys(passwordXPath, jw.Account.Password),
-			chromedp.Sleep(2 * time.Second),
+			chromedp.Sleep(time.Second),
+			chromedp.Click(keepSessionXPath),
+			chromedp.Sleep(time.Second),
 			chromedp.Click(loginXPath),
-			chromedp.Sleep(2 * time.Second),
+			chromedp.Sleep(5 * time.Second),
+			chromedp.WaitEnabled("deviceAuthOtp_otp", chromedp.ByID),
+			chromedp.SendKeys(otpXPath, generateOtp(jw.Account.TwoFA)),
+			chromedp.Click(nextXPath),
+			chromedp.Sleep(10 * time.Second),
+			chromedp.ActionFunc(func(ctx context.Context) error {
+				cookies, err := network.GetCookies().Do(ctx)
+				if err != nil {
+					return err
+				}
+				for i, cookie := range cookies {
+					log.Printf("chrome cookie %d: %+v", i, cookie.Name)
+				}
+				return nil
+			}),
+			chromedp.Sleep(20 * time.Second),
 		}
 
 		if err := chromedp.Run(ctx, tasks); err != nil {
 			fmt.Println(err)
 		}
 
-		log.Printf("%v", network.GetCookies())
-
 	}, nil
+}
+
+func generateOtp(_2faStr string) string {
+	totp := gotp.NewDefaultTOTP(_2faStr)
+	return totp.Now()
 }
