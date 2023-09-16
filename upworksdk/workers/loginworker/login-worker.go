@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	md "github.com/19kvh97/webscrappinggo/upworksdk/models"
 	wk "github.com/19kvh97/webscrappinggo/upworksdk/workers"
-	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/cdproto/storage"
 	"github.com/chromedp/chromedp"
 	"github.com/xlzd/gotp"
 )
@@ -40,6 +41,7 @@ func (jw *LoginWorker) PrepareTask() (func(context.Context), error) {
 
 		tasks := chromedp.Tasks{
 			chromedp.Navigate(runningmode.GetLink()),
+			chromedp.Sleep(2 * time.Second),
 			chromedp.WaitEnabled("login_username", chromedp.ByID),
 			chromedp.SendKeys(emailXPath, jw.Account.Email),
 			chromedp.Sleep(2 * time.Second),
@@ -50,26 +52,60 @@ func (jw *LoginWorker) PrepareTask() (func(context.Context), error) {
 			chromedp.Click(keepSessionXPath),
 			chromedp.Sleep(time.Second),
 			chromedp.Click(loginXPath),
-			chromedp.Sleep(5 * time.Second),
-			chromedp.WaitEnabled("deviceAuthOtp_otp", chromedp.ByID),
-			chromedp.SendKeys(otpXPath, generateOtp(jw.Account.TwoFA)),
-			chromedp.Click(nextXPath),
 			chromedp.Sleep(10 * time.Second),
-			chromedp.ActionFunc(func(ctx context.Context) error {
-				cookies, err := network.GetCookies().Do(ctx)
-				if err != nil {
-					return err
-				}
-				for i, cookie := range cookies {
-					log.Printf("chrome cookie %d: %+v", i, cookie.Name)
-				}
-				return nil
-			}),
-			chromedp.Sleep(20 * time.Second),
 		}
+
+		// Create a channel to listen for cookies.
 
 		if err := chromedp.Run(ctx, tasks); err != nil {
 			fmt.Println(err)
+		}
+
+		// Check if the input field exists.
+		log.Println("check otp node")
+		// var nodes []*cdp.Node
+		var elementContent string
+		if err := chromedp.Run(ctx, chromedp.EvaluateAsDevTools("document.getElementById('deviceAuthOtp_otp')", &elementContent)); err != nil {
+			panic(err)
+		}
+
+		log.Printf("content %s", elementContent)
+
+		if len(elementContent) > 0 {
+			log.Println("verified 2fa")
+			verifiesTask := chromedp.Tasks{
+				chromedp.SendKeys(otpXPath, generateOtp(jw.Account.TwoFA)),
+				chromedp.Click(nextXPath),
+				chromedp.Sleep(10 * time.Second),
+			}
+
+			if err := chromedp.Run(ctx, verifiesTask); err != nil {
+				panic(err)
+			}
+		}
+
+		log.Println("run custom action")
+
+		if err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
+			log.Println("check cookie")
+			cookies, err := storage.GetCookies().Do(ctx)
+
+			log.Printf("cookies length : %d", len(cookies))
+			var c []string
+			for _, v := range cookies {
+				aCookie := v.Name + " - " + v.Domain
+				c = append(c, aCookie)
+			}
+
+			stringSlices := strings.Join(c[:], ",\n")
+			fmt.Printf("%v", stringSlices)
+
+			if err != nil {
+				return err
+			}
+			return nil
+		})); err != nil {
+			panic(err)
 		}
 
 	}, nil
