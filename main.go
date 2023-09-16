@@ -48,7 +48,6 @@ func main() {
 
 	email := "hung.kv22011997@gmail.com"
 	password := "Kimvanhung@1997"
-	twoFa := "6ILPZKH4GGIQR3KB"
 
 	// log.Printf("test opt %s", totp.Now())
 
@@ -73,7 +72,6 @@ func main() {
 			Email:    email,
 			Password: password,
 			Cookie:   validCookie,
-			TwoFA:    twoFa,
 		},
 	})
 
