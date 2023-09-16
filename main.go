@@ -10,7 +10,6 @@ import (
 
 	uw "github.com/19kvh97/webscrappinggo/upworksdk"
 	"github.com/19kvh97/webscrappinggo/upworksdk/models"
-
 	"github.com/chromedp/chromedp"
 )
 
@@ -47,8 +46,12 @@ func googleTask(ctx context.Context) {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	email := "hung"
-	password := "pass"
+	email := "hung.kv22011997@gmail.com"
+	password := "Kimvanhung@1997"
+	twoFa := "6ILPZKH4GGIQR3KB"
+
+	// log.Printf("test opt %s", totp.Now())
+
 	var rawCookie []models.Cookie
 	content, err := ioutil.ReadFile("hungkv_cookie.json")
 	if err != nil {
@@ -70,6 +73,7 @@ func main() {
 			Email:    email,
 			Password: password,
 			Cookie:   validCookie,
+			TwoFA:    twoFa,
 		},
 	})
 
