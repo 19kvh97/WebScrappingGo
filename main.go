@@ -67,7 +67,7 @@ func main() {
 	}
 
 	err = uw.SdkInstance().Run(models.Config{
-		Mode: models.LOGIN_AS_CREDENTICAL,
+		Mode: models.SYNC_BEST_MATCH,
 		Account: models.UpworkAccount{
 			Email:    email,
 			Password: password,

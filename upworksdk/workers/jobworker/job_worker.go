@@ -59,6 +59,7 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 		}
 		if err := chromedp.Run(ctx, tasks); err != nil {
 			fmt.Println(err)
+			return
 		}
 		var nodes []*cdp.Node
 		var job md.Job
@@ -70,6 +71,10 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 				chromedp.Sleep(3*time.Second))
 			if err != nil {
 				log.Printf("error : %v", err)
+			}
+			if len(nodes) == 0 {
+				log.Println("err : Can't find any node")
+				return
 			}
 			for _, node := range nodes {
 				err = chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
