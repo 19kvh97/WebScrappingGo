@@ -79,11 +79,11 @@ func main() {
 		panic(err)
 	}
 
-	// err = uw.SdkInstance().RegisterListener(email, models.LOGIN_AS_CREDENTICAL, DataAvailable)
+	err = uw.SdkInstance().RegisterListener(email, models.SYNC_BEST_MATCH, DataAvailable)
 
-	// if err != nil {
-	// 	panic(err)
-	// }
+	if err != nil {
+		panic(err)
+	}
 
 	for {
 		time.Sleep(5 * time.Minute)
