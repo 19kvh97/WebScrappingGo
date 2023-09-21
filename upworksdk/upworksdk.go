@@ -99,6 +99,7 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 		})
 	}
 	sdkM.configs = append(sdkM.configs, addIdConfigs...)
+	log.Printf("config length : %d", len(configs))
 	sdkM.wg.Add(len(configs))
 	for i := 0; i < len(configs); i++ {
 		go func(config models.Config) {
