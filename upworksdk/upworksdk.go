@@ -43,6 +43,7 @@ func (sdkM *SdkManager) init() error {
 	sdkM.wg = sync.WaitGroup{}
 	sdkM.wg.Add(1)
 	go func() {
+		defer sdkM.wg.Done()
 		for {
 			// log.Printf("Current goroutine count %d", len(sdkM.configs)+1)
 			time.Sleep(10 * time.Second)
