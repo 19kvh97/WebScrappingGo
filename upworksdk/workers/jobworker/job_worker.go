@@ -61,6 +61,20 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 			fmt.Println(err)
 			return
 		}
+
+		var check string
+		if err := chromedp.Run(ctx,
+			chromedp.Sleep(5*time.Second),
+			chromedp.EvaluateAsDevTools("document.getElementById('fwh-sidebar-profile')", &check)); err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		if len(check) == 0 {
+			fmt.Println("Can't find profile section")
+			return
+		}
+
 		var nodes []*cdp.Node
 		var job md.Job
 		for {
