@@ -3,7 +3,6 @@ package jobworker
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -57,21 +56,23 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 			// navigate to site
 			chromedp.Navigate(runningmode.GetLink()),
 		}
+		log.Println("test")
 		if err := chromedp.Run(ctx, tasks); err != nil {
-			fmt.Println(err)
+			log.Printf("err : %s", err.Error())
 			return
 		}
+		log.Println("test")
 
 		var check string
 		if err := chromedp.Run(ctx,
 			chromedp.Sleep(5*time.Second),
 			chromedp.EvaluateAsDevTools("document.getElementById('fwh-sidebar-profile')", &check)); err != nil {
-			fmt.Println(err)
+			log.Printf("err : %v", err)
 			return
 		}
 
 		if len(check) == 0 {
-			fmt.Println("Can't find profile section")
+			log.Println("Can't find profile section")
 			return
 		}
 

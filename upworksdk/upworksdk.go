@@ -29,25 +29,24 @@ var instance *SdkManager
 func SdkInstance() *SdkManager {
 	if instance == nil {
 		instance = &SdkManager{}
+		go func() {
+			err := instance.init()
+			if err != nil {
+				log.Printf("error on get instance upworkSDK : %s", err.Error())
+			}
+		}()
 	}
-	go func() {
-		err := instance.init()
-		if err != nil {
-			log.Printf("error on get instance upworkSDK : %s", err.Error())
-		}
-	}()
+
 	return instance
 }
 
 func (sdkM *SdkManager) init() error {
-	sdkM.wg = sync.WaitGroup{}
 	sdkM.wg.Add(1)
 	go func() {
 		defer sdkM.wg.Done()
 		for {
 			// log.Printf("Current goroutine count %d", len(sdkM.configs)+1)
 			time.Sleep(10 * time.Second)
-
 		}
 	}()
 	sdkM.wg.Wait()
@@ -57,9 +56,21 @@ func (sdkM *SdkManager) init() error {
 
 func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(string, models.IParcell)) error {
 	log.Printf("worker leng : %d", len(sdkM.Workers))
-	for em, worker := range sdkM.Workers {
-		log.Printf("em : %s , email : %s", em, email)
-		if em == email {
+	configId := ""
+	for _, cf := range sdkM.configs {
+		if cf.Account.Email == email && cf.Mode == mode {
+			configId = cf.Id
+			break
+		}
+	}
+
+	if configId == "" {
+		return fmt.Errorf("can't find config with email %s and mode %s", email, mode.GetName())
+	}
+
+	for cfId, worker := range sdkM.Workers {
+		log.Printf("cfId : %s , target Id : %s", cfId, configId)
+		if cfId == configId {
 			log.Printf("runtime type %T", worker)
 			if bmWorker, ok := worker.(*jw.JobWorker); ok {
 				if bmWorker.GetMode() == mode && bmWorker.Listener == nil {
@@ -98,19 +109,37 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 			Account: conf.Account,
 		})
 	}
-	sdkM.configs = append(sdkM.configs, addIdConfigs...)
+
+	if len(sdkM.configs) == 0 {
+		sdkM.configs = append(sdkM.configs, addIdConfigs...)
+	} else {
+		for _, newCf := range addIdConfigs {
+			for i, oldCf := range sdkM.configs {
+				if newCf.Account.Email == oldCf.Account.Email && newCf.Mode == oldCf.Mode {
+					sdkM.configs[i] = newCf
+					break
+				}
+				if i == len(sdkM.configs)-1 {
+					sdkM.configs = append(sdkM.configs, newCf)
+					break
+				}
+			}
+		}
+	}
 	log.Printf("config length : %d", len(configs))
 	sdkM.wg.Add(len(configs))
-	for i := 0; i < len(configs); i++ {
+	for i := 0; i < updateCount; i++ {
 		go func(config models.Config) {
 			log.Printf("Running %s", config.Mode.GetName())
 			sdkM.newSession(config)
 			defer sdkM.wg.Done()
+			log.Printf("finished config %s", config.Mode.GetName())
 		}(configs[i])
 	}
 
 	for i := 0; i < 5; i++ {
 		time.Sleep(time.Second)
+		log.Printf("length config = %d, workers = %d", len(sdkM.configs), len(sdkM.Workers))
 		if len(sdkM.configs) == len(sdkM.Workers) {
 			for key := range sdkM.Workers {
 				log.Printf("email : %s", key)
@@ -164,6 +193,7 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 
 	_, cancel := newChromedp(runner)
 	defer cancel()
+	defer delete(sdkM.Workers, config.Account.Email)
 }
 
 func newChromedp(worker func(context.Context)) (context.Context, context.CancelFunc) {
