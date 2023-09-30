@@ -32,8 +32,17 @@ func (rm *RunningMode) GetLink() string {
 	}
 }
 
+type ConfigState int
+
+const (
+	NEW_STATE ConfigState = iota
+	ACTIVE_STATE
+	INACTIVE_STATE
+)
+
 type Config struct {
 	Id      string
 	Mode    RunningMode
 	Account UpworkAccount
+	State   ConfigState
 }

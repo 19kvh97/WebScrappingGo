@@ -58,3 +58,42 @@ func TestWorkerProcess(t *testing.T) {
 
 	time.Sleep(3 * time.Minute)
 }
+
+func TestMultipleMode(t *testing.T) {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	var rawCookie []models.Cookie
+	content, err := ioutil.ReadFile("../valid_cookie1.json")
+	require.Nil(t, err)
+	err = json.Unmarshal(content, &rawCookie)
+	require.Nil(t, err)
+
+	validCookie, err := ExtractValidateCookies(rawCookie)
+	require.Nil(t, err)
+
+	testMail := "hung.kv22011997@gmail.com"
+	testPass := "testPass"
+
+	err = SdkInstance().Run(models.Config{
+		Mode: models.SYNC_BEST_MATCH,
+		Account: models.UpworkAccount{
+			Email:    testMail,
+			Password: testPass,
+			Cookie:   validCookie,
+		},
+	})
+
+	require.Equal(t, nil, err)
+	time.Sleep(5 * time.Second)
+
+	err = SdkInstance().Run(models.Config{
+		Mode: models.SYNC_RECENTLY,
+		Account: models.UpworkAccount{
+			Email:    testMail,
+			Password: testPass,
+			Cookie:   validCookie,
+		},
+	})
+
+	require.Equal(t, nil, err)
+	time.Sleep(5 * time.Minute)
+}

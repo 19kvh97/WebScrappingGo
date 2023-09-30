@@ -19,9 +19,10 @@ import (
 )
 
 type SdkManager struct {
-	configs []models.Config
-	wg      sync.WaitGroup
-	Workers map[string]wk.IWorker
+	configs       []models.Config
+	wg            sync.WaitGroup
+	Workers       map[string]wk.IWorker
+	configChanged chan models.ConfigState
 }
 
 var instance *SdkManager
@@ -46,7 +47,32 @@ func (sdkM *SdkManager) init() error {
 		defer sdkM.wg.Done()
 		for {
 			// log.Printf("Current goroutine count %d", len(sdkM.configs)+1)
-			time.Sleep(10 * time.Second)
+			time.Sleep(2 * time.Second)
+			state := <-sdkM.configChanged
+			switch state {
+			case models.NEW_STATE:
+				for i, cf := range sdkM.configs {
+					if cf.State == state {
+						go func(config models.Config) {
+							log.Printf("Running %s", config.Mode.GetName())
+							sdkM.newSession(config)
+							defer sdkM.wg.Done()
+							log.Printf("finished config %s", config.Mode.GetName())
+						}(cf)
+						sdkM.configs[i].State = models.ACTIVE_STATE
+						break
+					}
+				}
+			case models.INACTIVE_STATE:
+				for i, cf := range sdkM.configs {
+					if cf.State == state {
+						sdkM.configs = append(sdkM.configs[:i], sdkM.configs[i+1:]...)
+						break
+					}
+				}
+			default:
+				log.Printf("state changed %v", state)
+			}
 		}
 	}()
 	sdkM.wg.Wait()
@@ -126,29 +152,29 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 			}
 		}
 	}
-	log.Printf("config length : %d", len(configs))
-	sdkM.wg.Add(len(configs))
-	for i := 0; i < updateCount; i++ {
-		go func(config models.Config) {
-			log.Printf("Running %s", config.Mode.GetName())
-			sdkM.newSession(config)
-			defer sdkM.wg.Done()
-			log.Printf("finished config %s", config.Mode.GetName())
-		}(configs[i])
-	}
+	log.Printf("new added config length : %d", len(addIdConfigs))
+	// sdkM.wg.Add(len(configs))
+	// for i := 0; i < updateCount; i++ {
+	// 	go func(config models.Config) {
+	// 		log.Printf("Running %s", config.Mode.GetName())
+	// 		sdkM.newSession(config)
+	// 		defer sdkM.wg.Done()
+	// 		log.Printf("finished config %s", config.Mode.GetName())
+	// 	}(configs[i])
+	// }
 
-	for i := 0; i < 5; i++ {
-		time.Sleep(time.Second)
-		log.Printf("length config = %d, workers = %d", len(sdkM.configs), len(sdkM.Workers))
-		if len(sdkM.configs) == len(sdkM.Workers) {
-			for key := range sdkM.Workers {
-				log.Printf("email : %s", key)
-			}
-			return nil
-		}
-	}
+	// for i := 0; i < 5; i++ {
+	// 	time.Sleep(time.Second)
+	// 	log.Printf("length config = %d, workers = %d", len(sdkM.configs), len(sdkM.Workers))
+	// 	if len(sdkM.configs) == len(sdkM.Workers) {
+	// 		for key := range sdkM.Workers {
+	// 			log.Printf("email : %s", key)
+	// 		}
+	// 		return nil
+	// 	}
+	// }
 
-	return errors.New("run failed")
+	return nil
 }
 
 func (sdkM *SdkManager) newSession(config models.Config) {
