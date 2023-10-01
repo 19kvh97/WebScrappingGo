@@ -2,6 +2,7 @@ package upworksdk
 
 import (
 	"context"
+	"crypto/sha1"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -22,7 +23,8 @@ type SdkManager struct {
 	configs       []models.Config
 	wg            sync.WaitGroup
 	Workers       map[string]wk.IWorker
-	configChanged chan models.ConfigState
+	configChanged chan string
+	isInit        bool
 }
 
 var instance *SdkManager
@@ -42,42 +44,56 @@ func SdkInstance() *SdkManager {
 }
 
 func (sdkM *SdkManager) init() error {
+	if sdkM.configChanged == nil {
+		sdkM.configChanged = make(chan string)
+	}
 	sdkM.wg.Add(1)
 	go func() {
+		log.Printf("SdkManager initing")
+		sdkM.isInit = true
 		defer sdkM.wg.Done()
 		for {
-			// log.Printf("Current goroutine count %d", len(sdkM.configs)+1)
-			time.Sleep(2 * time.Second)
-			state := <-sdkM.configChanged
-			switch state {
-			case models.NEW_STATE:
-				for i, cf := range sdkM.configs {
-					if cf.State == state {
+			id := <-sdkM.configChanged
+			log.Printf("Config State with id %s is changing", id)
+			for i, cf := range sdkM.configs {
+				if cf.Id == id {
+					switch cf.State {
+					case models.NEW_STATE:
+						sdkM.wg.Add(1)
 						go func(config models.Config) {
+							defer sdkM.wg.Done()
+							defer sdkM.stop(config)
 							log.Printf("Running %s", config.Mode.GetName())
 							sdkM.newSession(config)
-							defer sdkM.wg.Done()
 							log.Printf("finished config %s", config.Mode.GetName())
 						}(cf)
 						sdkM.configs[i].State = models.ACTIVE_STATE
-						break
-					}
-				}
-			case models.INACTIVE_STATE:
-				for i, cf := range sdkM.configs {
-					if cf.State == state {
+					case models.INACTIVE_STATE:
 						sdkM.configs = append(sdkM.configs[:i], sdkM.configs[i+1:]...)
-						break
+						log.Printf("Remove config %s", cf.Id)
+					default:
+						log.Printf("nothing changed to %s", cf.Id)
 					}
+					break
 				}
-			default:
-				log.Printf("state changed %v", state)
 			}
 		}
 	}()
 	sdkM.wg.Wait()
 	log.Println("Run finished")
 	return nil
+}
+
+func (sdkM *SdkManager) stop(conf models.Config) error {
+	for i, cf := range sdkM.configs {
+		if cf.Id == conf.Id {
+			sdkM.configs[i].State = models.INACTIVE_STATE
+			sdkM.configChanged <- cf.Id
+			return nil
+		}
+	}
+
+	return fmt.Errorf("stop config %s failed", conf.Id)
 }
 
 func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(string, models.IParcell)) error {
@@ -123,6 +139,17 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 		sdkM.Workers = make(map[string]wk.IWorker)
 	}
 
+	for i := 0; i < 3; i++ {
+		if i == 2 {
+			return fmt.Errorf("init sdkmFailed")
+		}
+		if sdkM.isInit {
+			break
+		}
+		log.Println("Wait for SdkManager is inited")
+		time.Sleep(time.Second)
+	}
+
 	var addIdConfigs []models.Config
 	for _, conf := range configs {
 		id, err := GenerateUniqueId(conf)
@@ -153,26 +180,9 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 		}
 	}
 	log.Printf("new added config length : %d", len(addIdConfigs))
-	// sdkM.wg.Add(len(configs))
-	// for i := 0; i < updateCount; i++ {
-	// 	go func(config models.Config) {
-	// 		log.Printf("Running %s", config.Mode.GetName())
-	// 		sdkM.newSession(config)
-	// 		defer sdkM.wg.Done()
-	// 		log.Printf("finished config %s", config.Mode.GetName())
-	// 	}(configs[i])
-	// }
-
-	// for i := 0; i < 5; i++ {
-	// 	time.Sleep(time.Second)
-	// 	log.Printf("length config = %d, workers = %d", len(sdkM.configs), len(sdkM.Workers))
-	// 	if len(sdkM.configs) == len(sdkM.Workers) {
-	// 		for key := range sdkM.Workers {
-	// 			log.Printf("email : %s", key)
-	// 		}
-	// 		return nil
-	// 	}
-	// }
+	for _, cf := range addIdConfigs {
+		sdkM.configChanged <- cf.Id
+	}
 
 	return nil
 }
@@ -258,5 +268,7 @@ func GenerateUniqueId(config models.Config) (string, error) {
 	if config.Account.Email == "" {
 		return "", fmt.Errorf("account is invalid, email must not be empty")
 	}
-	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s_%s_%s", config.Account.Email, config.Mode.GetName(), time.Now().String()))), nil
+	hasher := sha1.New()
+	hasher.Write([]byte(fmt.Sprintf("%s_%s_%s", config.Account.Email, config.Mode.GetName(), time.Now().String())))
+	return base64.URLEncoding.EncodeToString(hasher.Sum(nil)), nil
 }
