@@ -177,7 +177,9 @@ func TestRegisterListener(t *testing.T) {
 	// log.Printf("test opt %s", totp.Now())
 
 	var rawCookie []models.Cookie
-	content, err := ioutil.ReadFile("../nothing_cookie.json")
+	// content, err := ioutil.ReadFile("../nothing_cookie.json")
+	content, err := ioutil.ReadFile("../valid_cookie2.json")
+
 	log.Printf("%v", err)
 	require.Nil(t, err)
 

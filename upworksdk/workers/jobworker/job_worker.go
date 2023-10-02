@@ -82,7 +82,7 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 		var wg sync.WaitGroup
 		for {
 			err := chromedp.Run(ctx,
-				chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll),
+				chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll, chromedp.AtLeast(0)),
 				chromedp.Sleep(3*time.Second))
 
 			if err != nil {
