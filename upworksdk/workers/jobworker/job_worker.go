@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	md "github.com/19kvh97/webscrappinggo/upworksdk/models"
@@ -56,34 +57,34 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 			// navigate to site
 			chromedp.Navigate(runningmode.GetLink()),
 		}
-		log.Println("test")
 		if err := chromedp.Run(ctx, tasks); err != nil {
 			log.Printf("err : %s", err.Error())
 			return
 		}
-		log.Println("test")
 
-		var check string
-		if err := chromedp.Run(ctx,
-			chromedp.Sleep(5*time.Second),
-			chromedp.EvaluateAsDevTools("document.getElementById('fwh-sidebar-profile')", &check)); err != nil {
-			log.Printf("err : %v", err)
-			return
-		}
+		// var check string
+		// if err := chromedp.Run(ctx,
+		// 	chromedp.Sleep(5*time.Second),
+		// 	chromedp.EvaluateAsDevTools("document.getElementById('fwh-sidebar-profile')", &check)); err != nil {
+		// 	log.Printf("err : %v", err)
+		// 	return
+		// }
 
-		if len(check) == 0 {
-			log.Println("Can't find profile section")
-			return
-		}
+		// if len(check) == 0 {
+		// 	log.Println("Can't find profile section")
+		// 	return
+		// }
 
 		var nodes []*cdp.Node
 		var job md.Job
+		finishedTaskChannel := make(chan bool)
+		checkJobDivChannel := make(chan bool)
+		var wg sync.WaitGroup
 		for {
-			log.Println("Refresh")
 			err := chromedp.Run(ctx,
-				chromedp.Navigate(runningmode.GetLink()),
 				chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll),
 				chromedp.Sleep(3*time.Second))
+
 			if err != nil {
 				log.Printf("error : %v", err)
 			}
@@ -91,8 +92,34 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 				log.Println("err : Can't find any node")
 				return
 			}
+
+			wg.Add(1)
+			isExistedJobDiv := false
+			go func() {
+				defer wg.Done()
+				taskCounter := 0
+				for {
+					log.Printf("taskCounter %d", taskCounter)
+					select {
+					case <-finishedTaskChannel:
+						taskCounter++
+					case <-checkJobDivChannel:
+						isExistedJobDiv = true
+					}
+
+					if isExistedJobDiv {
+						break
+					}
+
+					if taskCounter == len(nodes) {
+						log.Println("Page doesn't have jobs div")
+						return
+					}
+				}
+			}()
+
 			for _, node := range nodes {
-				err = chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
+				err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
 					res, err := dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
 					if err != nil {
 						return err
@@ -107,13 +134,36 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 						jw.SendResult(job)
 					})
 
+					doc.Find("button.up-tab-btn.px-20.mr-0").Each(func(index int, info *goquery.Selection) {
+						log.Printf("finded %s", info.Find(".up-tab-btn").Text())
+					})
+
+					if len(doc.Find("div.up-card-header.pb-0.border-bottom-border-base").Nodes) > 0 {
+						checkJobDivChannel <- true
+					} else {
+						log.Println("finished")
+						finishedTaskChannel <- true
+					}
+					log.Println("last")
 					return nil
 				}))
 				if err != nil {
 					log.Printf("error : %v", err)
 				}
 			}
+
+			wg.Wait()
+			if !isExistedJobDiv {
+				return
+			}
+
 			time.Sleep(1 * time.Minute)
+			log.Println("Refresh")
+			err = chromedp.Run(ctx,
+				chromedp.Navigate(runningmode.GetLink()))
+			if err != nil {
+				log.Printf("error : %v", err)
+			}
 		}
 	}, nil
 }

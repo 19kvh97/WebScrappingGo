@@ -167,3 +167,63 @@ func TestChannel(t *testing.T) {
 	wg.Wait()
 	log.Println("Finish test")
 }
+
+func TestRegisterListener(t *testing.T) {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	email := "hung.kv22011997@gmail.com"
+	password := "Kimvanhung@1997"
+
+	// log.Printf("test opt %s", totp.Now())
+
+	var rawCookie []models.Cookie
+	content, err := ioutil.ReadFile("../nothing_cookie.json")
+	log.Printf("%v", err)
+	require.Nil(t, err)
+
+	err = json.Unmarshal(content, &rawCookie)
+	require.Nil(t, err)
+
+	validCookie, err := ExtractValidateCookies(rawCookie)
+	require.Nil(t, err)
+
+	err = SdkInstance().Run(models.Config{
+		Mode: models.SYNC_BEST_MATCH,
+		Account: models.UpworkAccount{
+			Email:    email,
+			Password: password,
+			Cookie:   validCookie,
+		},
+	})
+
+	require.Nil(t, err)
+
+	isConfigActived := false
+	for i := 0; i < 3; i++ {
+		if SdkInstance().IsConfigActived(email, models.SYNC_BEST_MATCH) {
+			isConfigActived = true
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
+	require.Equal(t, isConfigActived, true)
+
+	passChannel := make(chan bool)
+	jobCount := 0
+	err = SdkInstance().RegisterListener(email, models.SYNC_BEST_MATCH, func(email string, parcell models.IParcell) {
+		log.Println("received data")
+		if job, ok := parcell.(models.Job); ok {
+			log.Printf("Job title: %s", job.Title)
+			jobCount++
+			if jobCount > 50 {
+				passChannel <- true
+			}
+		}
+	})
+
+	require.Nil(t, err)
+
+	isPass := <-passChannel
+	require.Equal(t, isPass, true)
+}

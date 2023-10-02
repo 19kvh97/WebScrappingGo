@@ -96,6 +96,18 @@ func (sdkM *SdkManager) stop(conf models.Config) error {
 	return fmt.Errorf("stop config %s failed", conf.Id)
 }
 
+func (sdkM *SdkManager) IsConfigActived(email string, mode models.RunningMode) bool {
+	for _, cf := range sdkM.configs {
+		if cf.Account.Email == email && cf.Mode == mode {
+			if cf.State == models.ACTIVE_STATE {
+				return true
+			}
+			break
+		}
+	}
+	return false
+}
+
 func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(string, models.IParcell)) error {
 	log.Printf("worker leng : %d", len(sdkM.Workers))
 	configId := ""
@@ -140,11 +152,11 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 	}
 
 	for i := 0; i < 3; i++ {
-		if i == 2 {
-			return fmt.Errorf("init sdkmFailed")
-		}
 		if sdkM.isInit {
 			break
+		}
+		if i == 2 {
+			return fmt.Errorf("init sdkmFailed")
 		}
 		log.Println("Wait for SdkManager is inited")
 		time.Sleep(time.Second)
@@ -220,7 +232,7 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 	default:
 		break
 	}
-	sdkM.Workers[config.Account.Email] = worker
+	sdkM.Workers[config.Id] = worker
 
 	runner, err := worker.PrepareTask()
 	if err != nil {
