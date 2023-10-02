@@ -169,9 +169,10 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 			panic(err)
 		}
 		addIdConfigs = append(addIdConfigs, models.Config{
-			Id:      id,
-			Mode:    conf.Mode,
-			Account: conf.Account,
+			Id:       id,
+			Mode:     conf.Mode,
+			Account:  conf.Account,
+			Interval: conf.Interval,
 		})
 	}
 
@@ -208,6 +209,7 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 			Worker: wk.Worker{
 				Account: config.Account,
 			},
+			Interval: config.Interval,
 		}
 	case models.SYNC_RECENTLY:
 		worker = &jw.JobWorker{
@@ -215,6 +217,7 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 			Worker: wk.Worker{
 				Account: config.Account,
 			},
+			Interval: config.Interval,
 		}
 	case models.SYNC_MESSAGE:
 		worker = &mw.MessageWorker{

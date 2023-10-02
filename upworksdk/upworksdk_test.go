@@ -178,7 +178,7 @@ func TestRegisterListener(t *testing.T) {
 
 	var rawCookie []models.Cookie
 	// content, err := ioutil.ReadFile("../nothing_cookie.json")
-	content, err := ioutil.ReadFile("../valid_cookie2.json")
+	content, err := ioutil.ReadFile("../valid_cookie1.json")
 
 	log.Printf("%v", err)
 	require.Nil(t, err)
@@ -196,6 +196,7 @@ func TestRegisterListener(t *testing.T) {
 			Password: password,
 			Cookie:   validCookie,
 		},
+		Interval: 30 * 1000, // 30 second
 	})
 
 	require.Nil(t, err)

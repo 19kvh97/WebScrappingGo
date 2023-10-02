@@ -3,9 +3,9 @@ package jobworker
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
-	"sync"
 	"time"
 
 	md "github.com/19kvh97/webscrappinggo/upworksdk/models"
@@ -19,7 +19,8 @@ import (
 
 type JobWorker struct {
 	wk.Worker
-	Mode md.RunningMode
+	Mode     md.RunningMode
+	Interval int
 }
 
 func (jw *JobWorker) GetMode() md.RunningMode {
@@ -30,6 +31,10 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 	if jw.Mode == md.UNKNOWN {
 		return nil, errors.New("invalid RunningMode")
 	}
+	if jw.Interval <= 0 {
+		return nil, fmt.Errorf("invalid interval %d", jw.Interval)
+	}
+
 	return func(ctx context.Context) {
 		cookies := jw.Account.Cookie
 
@@ -77,9 +82,6 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 
 		var nodes []*cdp.Node
 		var job md.Job
-		finishedTaskChannel := make(chan bool)
-		checkJobDivChannel := make(chan bool)
-		var wg sync.WaitGroup
 		for {
 			err := chromedp.Run(ctx,
 				chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll, chromedp.AtLeast(0)),
@@ -92,31 +94,6 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 				log.Println("err : Can't find any node")
 				return
 			}
-
-			wg.Add(1)
-			isExistedJobDiv := false
-			go func() {
-				defer wg.Done()
-				taskCounter := 0
-				for {
-					log.Printf("taskCounter %d", taskCounter)
-					select {
-					case <-finishedTaskChannel:
-						taskCounter++
-					case <-checkJobDivChannel:
-						isExistedJobDiv = true
-					}
-
-					if isExistedJobDiv {
-						break
-					}
-
-					if taskCounter == len(nodes) {
-						log.Println("Page doesn't have jobs div")
-						return
-					}
-				}
-			}()
 
 			for _, node := range nodes {
 				err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
@@ -133,18 +110,6 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 						job.ImportData(info)
 						jw.SendResult(job)
 					})
-
-					doc.Find("button.up-tab-btn.px-20.mr-0").Each(func(index int, info *goquery.Selection) {
-						log.Printf("finded %s", info.Find(".up-tab-btn").Text())
-					})
-
-					if len(doc.Find("div.up-card-header.pb-0.border-bottom-border-base").Nodes) > 0 {
-						checkJobDivChannel <- true
-					} else {
-						log.Println("finished")
-						finishedTaskChannel <- true
-					}
-					log.Println("last")
 					return nil
 				}))
 				if err != nil {
@@ -152,12 +117,7 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 				}
 			}
 
-			wg.Wait()
-			if !isExistedJobDiv {
-				return
-			}
-
-			time.Sleep(1 * time.Minute)
+			time.Sleep(time.Duration(jw.Interval * int(time.Millisecond)))
 			log.Println("Refresh")
 			err = chromedp.Run(ctx,
 				chromedp.Navigate(runningmode.GetLink()))

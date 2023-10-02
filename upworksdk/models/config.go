@@ -41,8 +41,9 @@ const (
 )
 
 type Config struct {
-	Id      string
-	Mode    RunningMode
-	Account UpworkAccount
-	State   ConfigState
+	Id       string
+	Mode     RunningMode
+	Account  UpworkAccount
+	State    ConfigState
+	Interval int
 }
