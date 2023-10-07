@@ -35,6 +35,8 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 		return nil, fmt.Errorf("invalid interval %d", jw.Interval)
 	}
 
+	jw.IsActive = true
+
 	return func(ctx context.Context) {
 		cookies := jw.Account.Cookie
 
@@ -70,6 +72,10 @@ func (jw *JobWorker) PrepareTask() (func(context.Context), error) {
 		var nodes []*cdp.Node
 		var job md.Job
 		for {
+			if !jw.IsActive {
+				log.Println("Worker stop by external!")
+				return
+			}
 			err := chromedp.Run(ctx,
 				chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll, chromedp.AtLeast(0)),
 				chromedp.Sleep(3*time.Second))

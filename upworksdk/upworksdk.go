@@ -114,7 +114,13 @@ func (sdkM *SdkManager) IsConfigActived(email string, mode models.RunningMode) b
 }
 
 func (sdkM *SdkManager) DeleteConfig(email string, mode models.RunningMode) error {
-	return errors.New("not implement")
+	for _, cf := range sdkM.configs {
+		if cf.Account.Email == email && cf.Mode == mode {
+			sdkM.Workers[cf.Id].Stop()
+			return nil
+		}
+	}
+	return fmt.Errorf("cant find config with email %s and mode %s", email, mode.GetName())
 }
 
 func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(string, models.IParcell)) error {
