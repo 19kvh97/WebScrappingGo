@@ -113,6 +113,10 @@ func (sdkM *SdkManager) IsConfigActived(email string, mode models.RunningMode) b
 	return false
 }
 
+func (sdkM *SdkManager) DeleteConfig(email string, mode models.RunningMode) error {
+	return errors.New("not implement")
+}
+
 func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, listener func(string, models.IParcell)) error {
 	log.Printf("worker leng : %d", len(sdkM.Workers))
 	configId := ""
