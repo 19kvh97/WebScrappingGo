@@ -100,7 +100,12 @@ func (sdkM *SdkManager) IsConfigActived(email string, mode models.RunningMode) b
 	for _, cf := range sdkM.configs {
 		if cf.Account.Email == email && cf.Mode == mode {
 			if cf.State == models.ACTIVE_STATE {
-				return true
+				//check in worker list
+				for cfId := range sdkM.Workers {
+					if cfId == cf.Id {
+						return true
+					}
+				}
 			}
 			break
 		}
