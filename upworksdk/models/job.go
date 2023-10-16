@@ -88,7 +88,7 @@ func (job *Job) ImportData(info *goquery.Selection) {
 		job.PriceType = FIXED_PRICE
 		price := info.Find("[data-test=\"budget\"]").Text()
 		if price != "" {
-			job.Budget = price
+			job.Budget = strings.ReplaceAll(price, "\n", "")
 		} else {
 			job.Budget = "Not found"
 		}
