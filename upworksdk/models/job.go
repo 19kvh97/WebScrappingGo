@@ -117,7 +117,7 @@ func (job *Job) ImportData(info *goquery.Selection) {
 	info.Find("h2.my-0.p-sm-right.job-tile-title a.up-n-link").Each(func(i int, s *goquery.Selection) {
 		url, ok := s.Attr("href")
 		if ok {
-			job.Link = "https://www.upwork.com/" + url
+			job.Link = "https://www.upwork.com" + url
 		}
 	})
 	job.Client.FromRawData(info)
