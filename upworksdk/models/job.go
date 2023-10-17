@@ -19,6 +19,10 @@ const (
 	HOURLY
 )
 
+func (pt PriceType) String() string {
+	return []string{"Fixed-price", "Hourly"}[pt]
+}
+
 type Client struct {
 	Name            string `json:"name" default:"Undefined"`
 	PaymentVerified bool   `json:"is_payment_verified"`
@@ -78,6 +82,7 @@ type Job struct {
 	TimePosted    int64     `json:"time_posted"`
 	ProposalCount int       `json:"proposal_count"`
 	Tags          []string  `json:"tags"`
+	Link          string    `json:"link"`
 	Client        Client    `json:"client"`
 }
 
@@ -109,7 +114,17 @@ func (job *Job) ImportData(info *goquery.Selection) {
 	})
 
 	job.Tags = tags
+	info.Find("h2.my-0.p-sm-right.job-tile-title a.up-n-link").Each(func(i int, s *goquery.Selection) {
+		url, ok := s.Attr("href")
+		if ok {
+			job.Link = url
+		}
+	})
 	job.Client.FromRawData(info)
+}
+
+func (jb *Job) FormattedTimePosted() string {
+	return time.UnixMilli(jb.TimePosted).Format("2006-01-02 15:04")
 }
 
 func getProposalCount(proposalText string) int {
@@ -152,11 +167,12 @@ func toMilisecond(timeStr string) int64 {
 func (job *Job) AsMessage() string {
 	tmplStr := `
 <strong>Title:</strong> {{ .Title | html }}
-<strong>Price Type:</strong> {{ .PriceType | html }}
+<strong>Price Type:</strong> {{ .PriceType.String | html }}
 <strong>Budget:</strong> {{ .Budget | html }}
 <strong>Description:</strong> {{ .Description | html }}
-<strong>Time Posted:</strong> {{ .TimePosted | html }}
+<strong>Time Posted:</strong> {{ .FormattedTimePosted | html }}
 <strong>Proposal Count:</strong> {{ .ProposalCount | html }}
+<strong><a href="{{ .Link | html }}">Link</a></strong> 
 `
 	tmpl, err := template.New("jobTemplate").Parse(tmplStr)
 	if err != nil {
