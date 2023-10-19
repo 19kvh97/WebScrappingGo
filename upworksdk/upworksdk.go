@@ -54,9 +54,9 @@ func (sdkM *SdkManager) init() error {
 		defer sdkM.wg.Done()
 		for {
 			id := <-sdkM.configChanged
-			log.Printf("Config State with id %s is changing", id)
 			for i, cf := range sdkM.configs {
 				if cf.Id == id {
+					log.Printf("Config %s has new State : %s", id, cf.State.String())
 					switch cf.State {
 					case models.NEW_STATE:
 						sdkM.wg.Add(1)
@@ -69,6 +69,7 @@ func (sdkM *SdkManager) init() error {
 						}(cf)
 						sdkM.configs[i].State = models.ACTIVE_STATE
 					case models.INACTIVE_STATE:
+						sdkM.Workers[cf.Id].Stop()
 						sdkM.configs = append(sdkM.configs[:i], sdkM.configs[i+1:]...)
 						log.Printf("Remove config %s", cf.Id)
 					default:
@@ -85,11 +86,24 @@ func (sdkM *SdkManager) init() error {
 }
 
 func (sdkM *SdkManager) Stop(conf models.Config) error {
+	log.Printf("Stop config")
 	for i, cf := range sdkM.configs {
-		if cf.Id == conf.Id {
-			sdkM.configs[i].State = models.INACTIVE_STATE
-			sdkM.configChanged <- cf.Id
-			return nil
+		if cf.Account.Email == conf.Account.Email && cf.Mode == conf.Mode {
+			if _, ok := sdkM.Workers[cf.Id]; ok {
+				sdkM.configs[i].State = models.INACTIVE_STATE
+				sdkM.configChanged <- cf.Id
+				for k := 0; k < 5; k++ {
+					if _, ok := sdkM.Workers[cf.Id]; ok {
+						time.Sleep(2 * time.Second)
+						continue
+					}
+
+					if k == 4 {
+						return fmt.Errorf("cant stop config with email %s and mode %s", cf.Account.Email, cf.Mode.GetName())
+					}
+				}
+				return nil
+			}
 		}
 	}
 
@@ -97,12 +111,13 @@ func (sdkM *SdkManager) Stop(conf models.Config) error {
 }
 
 func (sdkM *SdkManager) IsConfigActived(email string, mode models.RunningMode) bool {
+	log.Printf("IsConfigActived email : %s, mode : %s", email, mode.GetName())
 	for _, cf := range sdkM.configs {
 		if cf.Account.Email == email && cf.Mode == mode {
 			if cf.State == models.ACTIVE_STATE {
 				//check in worker list
 				for cfId := range sdkM.Workers {
-					if cfId == cf.Id {
+					if cfId == cf.Id && sdkM.Workers[cfId].IsRunning() {
 						return true
 					}
 				}
@@ -191,28 +206,14 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 		})
 	}
 
-	if len(sdkM.configs) == 0 {
-		sdkM.configs = append(sdkM.configs, addIdConfigs...)
-	} else {
-		for _, newCf := range addIdConfigs {
-			for i, oldCf := range sdkM.configs {
-				if newCf.Account.Email == oldCf.Account.Email && newCf.Mode == oldCf.Mode {
-					sdkM.configs[i] = newCf
-					break
-				}
-				if i == len(sdkM.configs)-1 {
-					sdkM.configs = append(sdkM.configs, newCf)
-					break
-				}
-			}
-		}
-	}
+	sdkM.configs = append(sdkM.configs, addIdConfigs...)
+
 	log.Printf("new added config length : %d", len(addIdConfigs))
 	for _, cf := range addIdConfigs {
 		if sdkM.IsConfigActived(cf.Account.Email, cf.Mode) {
 			err := sdkM.Stop(cf)
 			if err != nil {
-				return err
+				log.Printf("error in stop config : %v", err)
 			}
 			time.Sleep(time.Second)
 		}

@@ -11,6 +11,7 @@ type IWorker interface {
 	GetMode() models.RunningMode
 	SendResult(models.IParcell)
 	Stop()
+	IsRunning() bool
 }
 
 type Worker struct {
@@ -37,4 +38,8 @@ func (w Worker) GetMode() models.RunningMode {
 
 func (w *Worker) Stop() {
 	w.IsActive = false
+}
+
+func (w *Worker) IsRunning() bool {
+	return w.IsActive
 }

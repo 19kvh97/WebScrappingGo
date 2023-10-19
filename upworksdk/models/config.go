@@ -40,6 +40,10 @@ const (
 	INACTIVE_STATE
 )
 
+func (cs ConfigState) String() string {
+	return []string{"NEW_STATE", "ACTIVE_STATE", "INACTIVE_STATE"}[cs]
+}
+
 type Config struct {
 	Id       string
 	Mode     RunningMode

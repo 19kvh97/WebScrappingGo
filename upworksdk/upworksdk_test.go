@@ -238,6 +238,7 @@ func TestRegisterListener(t *testing.T) {
 }
 
 func TestRestartConfig(t *testing.T) {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	cf := initConfig(t, 30)
 
 	numGoroutine := runtime.NumGoroutine()
@@ -261,7 +262,7 @@ func TestRestartConfig(t *testing.T) {
 	time.Sleep(5 * time.Second)
 	log.Printf("numGorountine after %d", runtime.NumGoroutine())
 
-	require.Equal(t, runtime.NumGoroutine()-numGoroutine, 11)
+	require.Equal(t, 11, runtime.NumGoroutine()-numGoroutine)
 
 	//restart
 	cf.Interval = 50000
@@ -281,7 +282,7 @@ func TestRestartConfig(t *testing.T) {
 
 	require.Equal(t, isConfigActived, true)
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 	log.Printf("numGorountine after %d", runtime.NumGoroutine())
 
 	require.Equal(t, runtime.NumGoroutine()-numGoroutine, 11)
@@ -296,7 +297,6 @@ func TestStopConfig(t *testing.T) {
 
 	require.Nil(t, err)
 
-	log.Printf("numGorountine after %d", runtime.NumGoroutine())
 	isConfigActived := false
 	for i := 0; i < 3; i++ {
 		if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
@@ -307,4 +307,22 @@ func TestStopConfig(t *testing.T) {
 	}
 
 	require.Equal(t, isConfigActived, true)
+	time.Sleep(5 * time.Second)
+
+	err = SdkInstance().Stop(cf)
+
+	require.Nil(t, err)
+
+	time.Sleep(5 * time.Second)
+
+	isConfigActived = false
+	for i := 0; i < 3; i++ {
+		if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
+			isConfigActived = true
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
+	require.Equal(t, isConfigActived, false)
 }
