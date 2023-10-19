@@ -62,7 +62,7 @@ func (sdkM *SdkManager) init() error {
 						sdkM.wg.Add(1)
 						go func(config models.Config) {
 							defer sdkM.wg.Done()
-							defer sdkM.stop(config)
+							defer sdkM.Stop(config)
 							log.Printf("Running %s", config.Mode.GetName())
 							sdkM.newSession(config)
 							log.Printf("finished config %s", config.Mode.GetName())
@@ -84,7 +84,7 @@ func (sdkM *SdkManager) init() error {
 	return nil
 }
 
-func (sdkM *SdkManager) stop(conf models.Config) error {
+func (sdkM *SdkManager) Stop(conf models.Config) error {
 	for i, cf := range sdkM.configs {
 		if cf.Id == conf.Id {
 			sdkM.configs[i].State = models.INACTIVE_STATE
@@ -209,6 +209,13 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 	}
 	log.Printf("new added config length : %d", len(addIdConfigs))
 	for _, cf := range addIdConfigs {
+		if sdkM.IsConfigActived(cf.Account.Email, cf.Mode) {
+			err := sdkM.Stop(cf)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second)
+		}
 		sdkM.configChanged <- cf.Id
 	}
 

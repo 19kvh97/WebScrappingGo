@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -12,6 +13,35 @@ import (
 	"github.com/19kvh97/webscrappinggo/upworksdk/models"
 	"github.com/stretchr/testify/require"
 )
+
+func initConfig(t *testing.T, interval int) models.Config {
+	email := "hung.kv22011997@gmail.com"
+	password := "Kimvanhung@1997"
+
+	// log.Printf("test opt %s", totp.Now())
+
+	var rawCookie []models.Cookie
+	// content, err := ioutil.ReadFile("../nothing_cookie.json")
+	content, err := ioutil.ReadFile("../valid_cookie1.json")
+
+	log.Printf("%v", err)
+	require.Nil(t, err)
+
+	err = json.Unmarshal(content, &rawCookie)
+	require.Nil(t, err)
+
+	validCookie, err := ExtractValidateCookies(rawCookie)
+	require.Nil(t, err)
+	return models.Config{
+		Mode: models.SYNC_BEST_MATCH,
+		Account: models.UpworkAccount{
+			Email:    email,
+			Password: password,
+			Cookie:   validCookie,
+		},
+		Interval: interval, // 30 second
+	}
+}
 
 func TestWorkerProcess(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -171,39 +201,15 @@ func TestChannel(t *testing.T) {
 func TestRegisterListener(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	email := "hung.kv22011997@gmail.com"
-	password := "Kimvanhung@1997"
+	cf := initConfig(t, 30*1000)
 
-	// log.Printf("test opt %s", totp.Now())
-
-	var rawCookie []models.Cookie
-	// content, err := ioutil.ReadFile("../nothing_cookie.json")
-	content, err := ioutil.ReadFile("../valid_cookie1.json")
-
-	log.Printf("%v", err)
-	require.Nil(t, err)
-
-	err = json.Unmarshal(content, &rawCookie)
-	require.Nil(t, err)
-
-	validCookie, err := ExtractValidateCookies(rawCookie)
-	require.Nil(t, err)
-
-	err = SdkInstance().Run(models.Config{
-		Mode: models.SYNC_BEST_MATCH,
-		Account: models.UpworkAccount{
-			Email:    email,
-			Password: password,
-			Cookie:   validCookie,
-		},
-		Interval: 30 * 1000, // 30 second
-	})
+	err := SdkInstance().Run(cf)
 
 	require.Nil(t, err)
 
 	isConfigActived := false
 	for i := 0; i < 3; i++ {
-		if SdkInstance().IsConfigActived(email, models.SYNC_BEST_MATCH) {
+		if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
 			isConfigActived = true
 			break
 		}
@@ -214,7 +220,7 @@ func TestRegisterListener(t *testing.T) {
 
 	passChannel := make(chan bool)
 	jobCount := 0
-	err = SdkInstance().RegisterListener(email, models.SYNC_BEST_MATCH, func(email string, parcell models.IParcell) {
+	err = SdkInstance().RegisterListener(cf.Account.Email, models.SYNC_BEST_MATCH, func(email string, parcell models.IParcell) {
 		log.Println("received data")
 		if job, ok := parcell.(models.Job); ok {
 			log.Printf("Job title: %s", job.Title)
@@ -229,4 +235,76 @@ func TestRegisterListener(t *testing.T) {
 
 	isPass := <-passChannel
 	require.Equal(t, isPass, true)
+}
+
+func TestRestartConfig(t *testing.T) {
+	cf := initConfig(t, 30)
+
+	numGoroutine := runtime.NumGoroutine()
+	log.Printf("NumGoroutine before %d", numGoroutine)
+	err := SdkInstance().Run(cf)
+
+	require.Nil(t, err)
+
+	log.Printf("numGorountine after %d", runtime.NumGoroutine())
+	isConfigActived := false
+	for i := 0; i < 3; i++ {
+		if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
+			isConfigActived = true
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
+	require.Equal(t, isConfigActived, true)
+
+	time.Sleep(5 * time.Second)
+	log.Printf("numGorountine after %d", runtime.NumGoroutine())
+
+	require.Equal(t, runtime.NumGoroutine()-numGoroutine, 11)
+
+	//restart
+	cf.Interval = 50000
+	err = SdkInstance().Run(cf)
+
+	require.Nil(t, err)
+
+	log.Printf("numGorountine after %d", runtime.NumGoroutine())
+	isConfigActived = false
+	for i := 0; i < 3; i++ {
+		if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
+			isConfigActived = true
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
+	require.Equal(t, isConfigActived, true)
+
+	time.Sleep(5 * time.Second)
+	log.Printf("numGorountine after %d", runtime.NumGoroutine())
+
+	require.Equal(t, runtime.NumGoroutine()-numGoroutine, 11)
+}
+
+func TestStopConfig(t *testing.T) {
+	cf := initConfig(t, 30)
+
+	numGoroutine := runtime.NumGoroutine()
+	log.Printf("NumGoroutine before %d", numGoroutine)
+	err := SdkInstance().Run(cf)
+
+	require.Nil(t, err)
+
+	log.Printf("numGorountine after %d", runtime.NumGoroutine())
+	isConfigActived := false
+	for i := 0; i < 3; i++ {
+		if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
+			isConfigActived = true
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
+	require.Equal(t, isConfigActived, true)
 }
