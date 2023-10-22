@@ -110,6 +110,18 @@ func (sdkM *SdkManager) Stop(conf models.Config) error {
 	return fmt.Errorf("stop config %s failed", conf.Id)
 }
 
+func (sdkM *SdkManager) GetActiveConfigCount() int {
+	activeCount := 0
+
+	for _, cf := range sdkM.configs {
+		if cf.State == models.ACTIVE_STATE {
+			activeCount++
+		}
+	}
+
+	return activeCount
+}
+
 func (sdkM *SdkManager) IsConfigActived(email string, mode models.RunningMode) bool {
 	log.Printf("IsConfigActived email : %s, mode : %s", email, mode.GetName())
 	for _, cf := range sdkM.configs {
