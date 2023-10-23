@@ -25,6 +25,7 @@ type SdkManager struct {
 	Workers       map[string]wk.IWorker
 	configChanged chan string
 	isInit        bool
+	ErrorNotifier chan string
 }
 
 var instance *SdkManager
@@ -46,6 +47,9 @@ func SdkInstance() *SdkManager {
 func (sdkM *SdkManager) init() error {
 	if sdkM.configChanged == nil {
 		sdkM.configChanged = make(chan string)
+	}
+	if sdkM.ErrorNotifier == nil {
+		sdkM.ErrorNotifier = make(chan string)
 	}
 	sdkM.wg.Add(1)
 	go func() {
@@ -72,6 +76,9 @@ func (sdkM *SdkManager) init() error {
 						sdkM.Workers[cf.Id].Stop()
 						sdkM.configs = append(sdkM.configs[:i], sdkM.configs[i+1:]...)
 						log.Printf("Remove config %s", cf.Id)
+						if sdkM.GetActiveConfigCount() == 0 {
+							sdkM.ErrorNotifier <- "Active config list is empty"
+						}
 					default:
 						log.Printf("nothing changed to %s", cf.Id)
 					}
