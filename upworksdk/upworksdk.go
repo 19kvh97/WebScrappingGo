@@ -25,7 +25,7 @@ type SdkManager struct {
 	Workers       map[string]wk.IWorker
 	configChanged chan string
 	isInit        bool
-	ErrorNotifier chan string
+	errorNotifier chan string
 }
 
 var instance *SdkManager
@@ -48,8 +48,8 @@ func (sdkM *SdkManager) init() error {
 	if sdkM.configChanged == nil {
 		sdkM.configChanged = make(chan string)
 	}
-	if sdkM.ErrorNotifier == nil {
-		sdkM.ErrorNotifier = make(chan string)
+	if sdkM.errorNotifier == nil {
+		sdkM.errorNotifier = make(chan string)
 	}
 	sdkM.wg.Add(1)
 	go func() {
@@ -77,7 +77,7 @@ func (sdkM *SdkManager) init() error {
 						sdkM.configs = append(sdkM.configs[:i], sdkM.configs[i+1:]...)
 						log.Printf("Remove config %s", cf.Id)
 						if sdkM.GetActiveConfigCount() == 0 {
-							sdkM.ErrorNotifier <- "Active config list is empty"
+							sdkM.errorNotifier <- "Active config list is empty"
 						}
 					default:
 						log.Printf("nothing changed to %s", cf.Id)
@@ -90,6 +90,19 @@ func (sdkM *SdkManager) init() error {
 	sdkM.wg.Wait()
 	log.Println("Run finished")
 	return nil
+}
+
+func (sdkM *SdkManager) ErrorChannel() (chan string, error) {
+	for i := 0; i < 5; i++ {
+		if sdkM.errorNotifier != nil {
+			break
+		}
+		time.Sleep(time.Second)
+		if i == 4 {
+			return nil, errors.New("get error channel failed")
+		}
+	}
+	return sdkM.errorNotifier, nil
 }
 
 func (sdkM *SdkManager) Stop(conf models.Config) error {
@@ -234,7 +247,15 @@ func (sdkM *SdkManager) Run(configs ...models.Config) error {
 			if err != nil {
 				log.Printf("error in stop config : %v", err)
 			}
+		}
+		for i := 0; i < 5; i++ {
+			if !sdkM.IsConfigActived(cf.Account.Email, cf.Mode) {
+				break
+			}
 			time.Sleep(time.Second)
+			if i == 4 {
+				return fmt.Errorf("can't start config with email %s and mode %s", cf.Account.Email, cf.Mode.GetName())
+			}
 		}
 		sdkM.configChanged <- cf.Id
 	}
@@ -286,7 +307,7 @@ func (sdkM *SdkManager) newSession(config models.Config) {
 
 	_, cancel := newChromedp(runner)
 	defer cancel()
-	defer delete(sdkM.Workers, config.Account.Email)
+	defer delete(sdkM.Workers, config.Id)
 }
 
 func newChromedp(worker func(context.Context)) (context.Context, context.CancelFunc) {
