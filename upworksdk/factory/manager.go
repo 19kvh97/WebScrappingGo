@@ -10,7 +10,7 @@ import (
 type Manager struct {
 	JobChannel    chan models.Config //Listen new config from outside, one employee just do one job
 	ResultChannel chan models.IParcell
-	Employees     map[string]Employee
+	Employees     map[string]IEmployee
 	subcribers    map[models.PackageType][]*models.Distributor
 	mutex         sync.Mutex
 	StopWork      chan struct{}
