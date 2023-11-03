@@ -228,3 +228,58 @@ func TestErrorMessage(t *testing.T) {
 		require.Greater(t, len(err.Message), 0)
 	}
 }
+
+func TestChangeInterval(t *testing.T) {
+	validConfig := initValidConfig(t, 10000)
+
+	resultChan := make(chan models.IParcell)
+
+	empl := Employee{
+		StopWork:   make(chan struct{}),
+		ResultChan: resultChan,
+		ErrorChan:  make(chan ErrorMessage),
+	}
+
+	go empl.StartWorking(validConfig)
+
+	firstResultTime := time.Now()
+	select {
+	case <-time.After(30 * time.Second):
+		require.FailNow(t, "timeout")
+	case rs := <-resultChan:
+		require.NotNil(t, rs)
+		require.Equal(t, "HelloWorld", rs.(*Result).Data)
+		firstResultTime = time.Now()
+	}
+
+	select {
+	case <-time.After(30 * time.Second):
+		require.FailNow(t, "timeout")
+	case rs := <-resultChan:
+		require.NotNil(t, rs)
+		require.Equal(t, "HelloWorld", rs.(*Result).Data)
+		require.LessOrEqual(t, time.Duration(16), time.Since(firstResultTime)/time.Second) // actual time is time+6s
+	}
+
+	validConfig.Interval = 15000
+
+	empl.UpdateConfig(validConfig)
+
+	select {
+	case <-time.After(60 * time.Second):
+		require.FailNow(t, "timeout")
+	case rs := <-resultChan:
+		require.NotNil(t, rs)
+		require.Equal(t, "HelloWorld", rs.(*Result).Data)
+		firstResultTime = time.Now()
+	}
+
+	select {
+	case <-time.After(60 * time.Second):
+		require.FailNow(t, "timeout")
+	case rs := <-resultChan:
+		require.NotNil(t, rs)
+		require.Equal(t, "HelloWorld", rs.(*Result).Data)
+		require.LessOrEqual(t, time.Duration(21), time.Since(firstResultTime)/time.Second) // actual time is time+6s
+	}
+}

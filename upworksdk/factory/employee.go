@@ -92,6 +92,8 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 		e.UpdateConfig(initConfig)
 	}()
 
+	isUpdateConfig := false
+
 	for {
 		select {
 		case <-e.StopWork:
@@ -101,7 +103,11 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 		case job := <-e.updateJobChan:
 			log.Println("Updatejobchan")
 			lastCf = job
-			e.updateLoopState(CREATE_ENV_STATE)
+			if e.State == SLEEP_STATE {
+				isUpdateConfig = true
+			} else {
+				e.updateLoopState(CREATE_ENV_STATE)
+			}
 		case e.State = <-e.loopStateChan:
 			log.Println("newLoop")
 			switch e.State {
@@ -116,6 +122,7 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 					continue
 				}
 				taskChan <- task
+				isUpdateConfig = false // update done and reset
 			case CREATE_JOB_STATE:
 				taskChan <- e.createJob(lastCf)
 			case SLEEP_STATE:
@@ -123,7 +130,11 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 				case <-ctx.Done():
 					return
 				case <-time.After(time.Duration(lastCf.Interval) * time.Millisecond):
-					e.updateLoopState(CREATE_JOB_STATE)
+					if isUpdateConfig {
+						e.updateLoopState(CREATE_ENV_STATE)
+					} else {
+						e.updateLoopState(CREATE_JOB_STATE)
+					}
 				}
 			}
 		case msg := <-errChan:
