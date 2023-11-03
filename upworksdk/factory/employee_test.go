@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/19kvh97/webscrappinggo/upworksdk"
+	"github.com/19kvh97/webscrappinggo/upworksdk/common"
 	"github.com/19kvh97/webscrappinggo/upworksdk/models"
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/network"
@@ -35,7 +35,7 @@ func initValidConfig(t *testing.T, interval int) models.Config {
 	err = json.Unmarshal(content, &rawCookie)
 	require.Nil(t, err)
 
-	validCookie, err := upworksdk.ExtractValidateCookies(rawCookie)
+	validCookie, err := common.ExtractValidateCookies(rawCookie)
 	require.Nil(t, err)
 	return models.Config{
 		Mode: models.SYNC_BEST_MATCH,
@@ -65,7 +65,7 @@ func initInvalidConfig(t *testing.T, interval int) models.Config {
 	err = json.Unmarshal(content, &rawCookie)
 	require.Nil(t, err)
 
-	validCookie, err := upworksdk.ExtractValidateCookies(rawCookie)
+	validCookie, err := common.ExtractValidateCookies(rawCookie)
 	require.Nil(t, err)
 	return models.Config{
 		Mode: models.SYNC_BEST_MATCH,

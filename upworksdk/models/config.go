@@ -1,5 +1,7 @@
 package models
 
+import "reflect"
+
 type RunningMode int
 
 const (
@@ -32,22 +34,22 @@ func (rm *RunningMode) GetLink() string {
 	}
 }
 
-type ConfigState int
-
-const (
-	NEW_STATE ConfigState = iota
-	ACTIVE_STATE
-	INACTIVE_STATE
-)
-
-func (cs ConfigState) String() string {
-	return []string{"NEW_STATE", "ACTIVE_STATE", "INACTIVE_STATE"}[cs]
-}
-
 type Config struct {
 	Id       string
 	Mode     RunningMode
 	Account  UpworkAccount
-	State    ConfigState
 	Interval int
+}
+
+func (cf *Config) Equal(other Config) bool {
+	if cf.Mode != other.Mode || !reflect.DeepEqual(cf.Account, other.Account) || cf.Interval != other.Interval {
+		return false
+	}
+	return true
+}
+
+func (cf *Config) Update(other Config) {
+	cf.Mode = other.Mode
+	cf.Account = other.Account
+	cf.Interval = other.Interval
 }

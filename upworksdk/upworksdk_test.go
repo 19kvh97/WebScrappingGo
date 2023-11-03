@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/19kvh97/webscrappinggo/upworksdk/common"
 	"github.com/19kvh97/webscrappinggo/upworksdk/models"
 	"github.com/stretchr/testify/require"
 )
@@ -31,7 +32,7 @@ func initValidConfig(t *testing.T, interval int) models.Config {
 	err = json.Unmarshal(content, &rawCookie)
 	require.Nil(t, err)
 
-	validCookie, err := ExtractValidateCookies(rawCookie)
+	validCookie, err := common.ExtractValidateCookies(rawCookie)
 	require.Nil(t, err)
 	return models.Config{
 		Mode: models.SYNC_BEST_MATCH,
@@ -61,7 +62,7 @@ func initInvalidConfig(t *testing.T, interval int) models.Config {
 	err = json.Unmarshal(content, &rawCookie)
 	require.Nil(t, err)
 
-	validCookie, err := ExtractValidateCookies(rawCookie)
+	validCookie, err := common.ExtractValidateCookies(rawCookie)
 	require.Nil(t, err)
 	return models.Config{
 		Mode: models.SYNC_BEST_MATCH,
@@ -82,7 +83,7 @@ func TestWorkerProcess(t *testing.T) {
 	err = json.Unmarshal(content, &rawCookie)
 	require.Nil(t, err)
 
-	validCookie, err := ExtractValidateCookies(rawCookie)
+	validCookie, err := common.ExtractValidateCookies(rawCookie)
 	require.Nil(t, err)
 
 	testMail := "hung.kv22011997@gmail.com"
