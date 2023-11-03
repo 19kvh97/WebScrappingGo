@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"reflect"
 	"strings"
 	"time"
 
@@ -26,9 +25,26 @@ type Result struct {
 	Data string
 }
 
-type WorkFailed struct {
+type LoopState int
+
+const (
+	CREATE_ENV_STATE LoopState = iota
+	CREATE_JOB_STATE
+	SLEEP_STATE
+)
+
+type ErrorType int
+
+const (
+	LOG ErrorType = iota
+	WARNING
+	CRITICAL
+)
+
+type ErrorMessage struct {
 	ConfigID string
 	Message  string
+	Type     ErrorType
 }
 
 type Task func(context.Context) (*Result, error)
@@ -41,13 +57,18 @@ type StateMachine struct {
 
 type Employee struct {
 	IEmployee
-	UpdateJobChan chan models.Config
+	updateJobChan chan models.Config
+	loopStateChan chan LoopState
 	StopWork      chan struct{}
 	ResultChan    chan models.IParcell
-	ErrorChan     chan WorkFailed
+	ErrorChan     chan ErrorMessage
+	State         LoopState
 }
 
 func (e *Employee) StartWorking(initConfig models.Config) {
+	e.updateJobChan = make(chan models.Config)
+	e.loopStateChan = make(chan LoopState)
+
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", false),
 		chromedp.Flag("start-fullscreen", false),
@@ -57,235 +78,200 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
-	prepareStageChan := make(chan *StateMachine)
-	doJobStageChan := make(chan *StateMachine)
-	sendResultStageChan := make(chan *StateMachine)
-	errStageChan := make(chan WorkFailed)
+	taskChan := make(chan Task)
+	errChan := make(chan ErrorMessage)
+	resultChan := make(chan *Result)
 
-	go e.prepareJob(ctx, prepareStageChan, errStageChan, doJobStageChan)
-	go e.doJob(ctx, doJobStageChan, errStageChan, sendResultStageChan)
-	go e.SendResult(ctx, sendResultStageChan, errStageChan, doJobStageChan)
-	go e.ErrorNotify(ctx, errStageChan)
+	go setUpChromeInstance(ctx, taskChan, errChan, resultChan)
 
 	//init state
-	prepareStageChan <- &StateMachine{
-		Config: initConfig,
-	}
+	lastCf := initConfig
 
-	for {
-		<-e.StopWork
-		log.Println("Employee stop working")
-		cancel()
-		return
-	}
-}
+	go func() {
+		time.Sleep(time.Second)
+		e.UpdateConfig(initConfig)
+	}()
 
-func (e *Employee) prepareJob(ctx context.Context, input <-chan *StateMachine, errStageChan chan<- WorkFailed, nextStage chan<- *StateMachine) {
-	log.Println("Prepare job")
-	lastState := &StateMachine{}
-	taskChan := make(chan chromedp.Tasks)
 	for {
 		select {
-		case <-ctx.Done():
+		case <-e.StopWork:
+			log.Println("Employee stop working")
+			cancel()
 			return
-		case stm := <-input:
-			if stm == nil {
-				errStageChan <- WorkFailed{
-					ConfigID: "empty",
-					Message:  "Config is empty",
+		case job := <-e.updateJobChan:
+			log.Println("Updatejobchan")
+			lastCf = job
+			e.updateLoopState(CREATE_ENV_STATE)
+		case e.State = <-e.loopStateChan:
+			log.Println("newLoop")
+			switch e.State {
+			case CREATE_ENV_STATE:
+				task, err := e.createEnv(lastCf)
+				if err != nil {
+					errChan <- ErrorMessage{
+						ConfigID: lastCf.Id,
+						Message:  err.Error(),
+						Type:     CRITICAL,
+					}
+					continue
 				}
-				continue
+				taskChan <- task
+			case CREATE_JOB_STATE:
+				taskChan <- e.createJob(lastCf)
+			case SLEEP_STATE:
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(time.Duration(lastCf.Interval) * time.Millisecond):
+					e.updateLoopState(CREATE_JOB_STATE)
+				}
 			}
-			if !reflect.DeepEqual(lastState.Config, stm.Config) {
-				if lastState != nil && stm != nil {
-					log.Printf("Update config %s to new config %s", lastState.Config.Id, stm.Config.Id)
-				}
-				lastState.Config = stm.Config
-				if lastState.Config.Mode == models.UNKNOWN {
-					errStageChan <- WorkFailed{
-						ConfigID: lastState.Config.Id,
-						Message:  "Config mode undefined",
-					}
-					return
-				}
-
-				if lastState.Config.Interval <= 0 {
-					errStageChan <- WorkFailed{
-						ConfigID: lastState.Config.Id,
-						Message:  fmt.Sprintf("Invalid interval : %d", lastState.Config.Interval),
-					}
-					return
-				}
-
-				go setUpChromeInstance(ctx, e.UpdateJobChan, taskChan)
-
-				log.Println("set task")
-				lastState.Task = func(ctx context.Context) (*Result, error) {
-					var nodes []*cdp.Node
-					var job models.Job
-
-					log.Printf("link : %s", lastState.Config.Mode.GetLink())
-
-					err := chromedp.Run(ctx,
-						// navigate to site
-						chromedp.Navigate(lastState.Config.Mode.GetLink()),
-						chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll, chromedp.AtLeast(0)),
-						chromedp.Sleep(3*time.Second))
-
-					if err != nil {
-						return nil, err
-					}
-					if len(nodes) == 0 {
-						return nil, errors.New("err : Can't find any node")
-					}
-
-					for _, node := range nodes {
-						err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
-							res, err := dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
-							if err != nil {
-								return err
-							}
-							doc, err := goquery.NewDocumentFromReader(strings.NewReader(res))
-							if err != nil {
-								return err
-							}
-
-							doc.Find("section.up-card-section.up-card-list-section.up-card-hover").Each(func(index int, info *goquery.Selection) {
-								job.ImportData(info)
-							})
-							return nil
-						}))
-						if err != nil {
-							return nil, err
-						}
-					}
-
-					return &Result{
-						Data: job.Title,
-					}, nil
-				}
-
+		case msg := <-errChan:
+			log.Println("onErr")
+			e.ErrorChan <- msg
+			switch msg.Type {
+			case LOG:
+				log.Printf("log with config %s : %s", msg.ConfigID, msg.Message)
+				e.updateLoopState(CREATE_JOB_STATE)
+			case WARNING:
+				log.Printf("warning with config %s : %s", msg.ConfigID, msg.Message)
+				e.updateLoopState(CREATE_JOB_STATE)
+			case CRITICAL:
+				close(e.StopWork)
+			}
+		case rs := <-resultChan:
+			log.Println("onResult")
+			if rs != nil {
+				e.ResultChan <- rs
+				e.updateLoopState(SLEEP_STATE)
+			} else {
+				e.updateLoopState(CREATE_JOB_STATE)
 			}
 
-			nextStage <- lastState
 		}
+
 	}
 }
 
-func setUpChromeInstance(extCtx context.Context, configChan <-chan models.Config, taskChan <-chan chromedp.Tasks) {
+func (e *Employee) updateLoopState(state LoopState) {
+	go func() {
+		e.loopStateChan <- state
+	}()
+}
+
+func (e *Employee) UpdateConfig(cf models.Config) {
+	go func() {
+		e.updateJobChan <- cf
+	}()
+}
+
+func (e *Employee) createEnv(cf models.Config) (Task, error) {
+	if cf.Mode == models.UNKNOWN {
+		return nil, errors.New("invalid RunningMode")
+	}
+	if cf.Interval <= 0 {
+		return nil, fmt.Errorf("invalid interval %d", cf.Interval)
+	}
+
+	return func(ctx context.Context) (*Result, error) {
+		cookies := cf.Account.Cookie
+
+		runningmode := cf.Mode
+
+		log.Printf("cookies length in PrepareTask %d", len(cookies))
+		var nodes []*cdp.Node
+		tasks := chromedp.Tasks{
+			chromedp.ActionFunc(func(ctx context.Context) error {
+				// create cookie expiration
+				expr := cdp.TimeSinceEpoch(time.Now().Add(180 * 24 * time.Hour))
+				// add cookies to chrome
+				for _, cookie := range cookies {
+					err := network.SetCookie(cookie.Name, cookie.Value).
+						WithExpires(&expr).
+						WithDomain("www.upwork.com").
+						WithHTTPOnly(false).
+						Do(ctx)
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+			}),
+
+			// navigate to site
+			chromedp.Navigate(runningmode.GetLink()),
+			chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll, chromedp.AtLeast(0)),
+		}
+		if err := chromedp.Run(ctx, tasks); err != nil {
+			return nil, err
+		}
+		if len(nodes) == 0 {
+			return nil, errors.New("err : Can't find any node")
+		}
+		return nil, nil
+	}, nil
+}
+
+func (e *Employee) createJob(cf models.Config) Task {
+	log.Println("createJob")
+	return func(ctx context.Context) (*Result, error) {
+		var nodes []*cdp.Node
+		var job models.Job
+		err := chromedp.Run(ctx,
+			chromedp.Navigate(cf.Mode.GetLink()),
+			chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll, chromedp.AtLeast(0)),
+			chromedp.Sleep(3*time.Second))
+
+		if err != nil {
+			return nil, err
+		}
+		if len(nodes) == 0 {
+			return nil, errors.New("err : Can't find any node")
+		}
+
+		for _, node := range nodes {
+			err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
+				res, err := dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
+				if err != nil {
+					return err
+				}
+				doc, err := goquery.NewDocumentFromReader(strings.NewReader(res))
+				if err != nil {
+					return err
+				}
+
+				doc.Find("section.up-card-section.up-card-list-section.up-card-hover").Each(func(index int, info *goquery.Selection) {
+					job.ImportData(info)
+				})
+				return nil
+			}))
+			if err != nil {
+				return nil, err
+			}
+		}
+		return &Result{
+			Data: "HelloWorld",
+		}, nil
+	}
+}
+
+func setUpChromeInstance(extCtx context.Context, taskChan <-chan Task, errChan chan<- ErrorMessage, resultChan chan<- *Result) {
 	for {
 		select {
 		case <-extCtx.Done():
 			return
-		case cf := <-configChan:
-			cookies := cf.Account.Cookie
-
-			log.Printf("cookies length in PrepareTask %d", len(cookies))
-			tasks := chromedp.Tasks{
-				chromedp.ActionFunc(func(ctx context.Context) error {
-					// create cookie expiration
-					expr := cdp.TimeSinceEpoch(time.Now().Add(180 * 24 * time.Hour))
-					// add cookies to chrome
-					for _, cookie := range cookies {
-						err := network.SetCookie(cookie.Name, cookie.Value).
-							WithExpires(&expr).
-							WithDomain("www.upwork.com").
-							WithHTTPOnly(false).
-							Do(ctx)
-						if err != nil {
-							return err
-						}
-					}
-					return nil
-				}),
-				chromedp.Navigate(cf.Mode.GetLink()),
-			}
-			if err := chromedp.Run(extCtx, tasks); err != nil {
-				log.Printf("err : %s", err.Error())
-			}
 		case tasks := <-taskChan:
-			if err := chromedp.Run(extCtx, tasks); err != nil {
-				log.Printf("err : %s", err.Error())
-			}
-		}
-	}
-
-}
-
-func (e *Employee) doJob(ctx context.Context, input <-chan *StateMachine, errStageChan chan<- WorkFailed, nextStage chan<- *StateMachine) {
-	lastState := &StateMachine{}
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case stm := <-input:
-			if stm == nil {
-				continue
-			}
-			if !reflect.DeepEqual(lastState.Config, stm.Config) {
-				lastState.Result = nil
-				nextStage <- lastState
-				continue
-			}
-			lastState = stm
-			if stm.Task == nil {
-				errStageChan <- WorkFailed{
-					ConfigID: stm.Config.Id,
-					Message:  "Task is nil",
+			log.Println("Receive new tasks")
+			result, err := tasks(extCtx)
+			if err != nil {
+				errChan <- ErrorMessage{
+					Type:    WARNING,
+					Message: err.Error(),
 				}
 			} else {
-				log.Println("on do job")
-				result, err := stm.Task(ctx)
-				if err != nil {
-					errStageChan <- WorkFailed{
-						ConfigID: stm.Config.Id,
-						Message:  fmt.Sprintf("Do job error : %s", err.Error()),
-					}
-				}
-				lastState.Result = result
-				nextStage <- lastState
-			}
-		case cf := <-e.UpdateJobChan:
-			if !reflect.DeepEqual(lastState.Config, cf) {
-				lastState.Config = cf
+				resultChan <- result
 			}
 		}
 	}
-}
 
-func (e *Employee) SendResult(ctx context.Context, input <-chan *StateMachine, errStageChan chan<- WorkFailed, nextStage chan<- *StateMachine) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case stm := <-input:
-			if stm == nil {
-				continue
-			}
-			if stm.Result != nil {
-				e.ResultChan <- stm.Result
-				select {
-				case <-ctx.Done():
-					return
-				case <-time.After(time.Duration(stm.Config.Interval) * time.Millisecond):
-					stm.Result = nil
-					nextStage <- stm
-				}
-			} else {
-				nextStage <- stm
-			}
-		}
-	}
-}
-
-func (e *Employee) ErrorNotify(ctx context.Context, input <-chan WorkFailed) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case wf := <-input:
-			e.ErrorChan <- wf
-			close(e.StopWork)
-		}
-	}
 }
