@@ -16,10 +16,6 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-type IEmployee interface {
-	StartWorking()
-}
-
 type Result struct {
 	models.IParcell
 	Data string
@@ -49,14 +45,7 @@ type ErrorMessage struct {
 
 type Task func(context.Context) (*Result, error)
 
-type StateMachine struct {
-	Config models.Config
-	Task   Task
-	Result *Result
-}
-
 type Employee struct {
-	IEmployee
 	updateJobChan chan models.Config
 	loopStateChan chan LoopState
 	StopWork      chan struct{}
@@ -80,7 +69,7 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 
 	taskChan := make(chan Task)
 	errChan := make(chan ErrorMessage)
-	resultChan := make(chan *Result)
+	resultChan := make(chan models.IParcell)
 
 	go setUpChromeInstance(ctx, taskChan, errChan, resultChan)
 
@@ -152,8 +141,8 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 			}
 		case rs := <-resultChan:
 			log.Println("onResult")
-			if rs != nil {
-				e.ResultChan <- rs
+			if res, ok := rs.(*Result); ok && res != nil {
+				e.ResultChan <- res
 				e.updateLoopState(SLEEP_STATE)
 			} else {
 				e.updateLoopState(CREATE_JOB_STATE)
@@ -266,7 +255,7 @@ func (e *Employee) createJob(cf models.Config) Task {
 	}
 }
 
-func setUpChromeInstance(extCtx context.Context, taskChan <-chan Task, errChan chan<- ErrorMessage, resultChan chan<- *Result) {
+func setUpChromeInstance(extCtx context.Context, taskChan <-chan Task, errChan chan<- ErrorMessage, resultChan chan<- models.IParcell) {
 	for {
 		select {
 		case <-extCtx.Done():

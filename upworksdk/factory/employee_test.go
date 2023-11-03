@@ -94,7 +94,7 @@ func TestSetUpChromeInstance(t *testing.T) {
 
 	taskChan := make(chan Task)
 	errChan := make(chan ErrorMessage)
-	resultChan := make(chan *Result)
+	resultChan := make(chan models.IParcell)
 
 	go setUpChromeInstance(ctx, taskChan, errChan, resultChan)
 	time.Sleep(2 * time.Second)
