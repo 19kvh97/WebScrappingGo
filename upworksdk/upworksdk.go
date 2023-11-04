@@ -53,6 +53,11 @@ func (sdkM *SdkManager) GetActiveConfigCount() int {
 
 func (sdkM *SdkManager) IsConfigActived(email string, mode models.RunningMode) bool {
 	log.Printf("IsConfigActived email : %s, mode : %s", email, mode.GetName())
+	for _, cf := range sdkM.configs {
+		if cf.Account.Email == email && cf.Mode == mode {
+			return sdkM.factoryManager.IsActive(cf.Id)
+		}
+	}
 
 	return false
 }

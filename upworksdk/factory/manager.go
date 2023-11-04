@@ -66,6 +66,11 @@ func (m *Manager) StopConfig(id string) {
 	}
 }
 
+func (m *Manager) IsActive(configId string) bool {
+	_, ok := m.employees[configId]
+	return ok
+}
+
 func (m *Manager) ActiveEmployeeCount() int {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
