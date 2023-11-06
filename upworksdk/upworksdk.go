@@ -111,5 +111,10 @@ func (sdkM *SdkManager) Run(configs ...models.Config) []string {
 		sdkM.factoryManager.RunConfig(sdkM.configs[idx])
 	}
 
-	return nil
+	var ids []string
+	for _, cf := range sdkM.configs {
+		ids = append(ids, cf.Id)
+	}
+
+	return ids
 }

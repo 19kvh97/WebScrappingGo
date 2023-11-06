@@ -18,10 +18,14 @@ type Manager struct {
 }
 
 func (m *Manager) StartWorking() {
+	m.mutex.Lock()
 	m.resultChannel = make(chan models.IParcell)
 	m.internalErrChannel = make(chan ErrorMessage)
-	m.employees = make(map[string]Employee)
+	if m.employees == nil {
+		m.employees = make(map[string]Employee)
+	}
 	m.subcribers = make(map[models.PackageType][]*models.Distributor)
+	m.mutex.Unlock()
 	go func() {
 		for {
 			select {
@@ -44,6 +48,10 @@ func (m *Manager) StartWorking() {
 func (m *Manager) RunConfig(cf models.Config) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+	if m.employees == nil {
+		m.employees = make(map[string]Employee)
+	}
+
 	if employee, ok := m.employees[cf.Id]; ok {
 		employee.UpdateConfig(cf)
 	} else {
