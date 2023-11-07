@@ -43,7 +43,7 @@ type ErrorMessage struct {
 	Type     ErrorType
 }
 
-type Task func(context.Context) (*Result, error)
+type Task func(context.Context) (*Result, string, error) // return with config id
 
 type Employee struct {
 	updateJobChan chan models.Config
@@ -127,7 +127,7 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 				}
 			}
 		case msg := <-errChan:
-			log.Println("onErr")
+			log.Printf("onErr : %v", msg)
 			e.ErrorChan <- msg
 			switch msg.Type {
 			case LOG:
@@ -137,7 +137,7 @@ func (e *Employee) StartWorking(initConfig models.Config) {
 				log.Printf("warning with config %s : %s", msg.ConfigID, msg.Message)
 				e.updateLoopState(CREATE_JOB_STATE)
 			case CRITICAL:
-				close(e.StopWork)
+				log.Printf("critical with config %s : %s", msg.ConfigID, msg.Message)
 			}
 		case rs := <-resultChan:
 			log.Println("onResult")
@@ -173,7 +173,7 @@ func (e *Employee) createEnv(cf models.Config) (Task, error) {
 		return nil, fmt.Errorf("invalid interval %d", cf.Interval)
 	}
 
-	return func(ctx context.Context) (*Result, error) {
+	return func(ctx context.Context) (*Result, string, error) {
 		cookies := cf.Account.Cookie
 
 		runningmode := cf.Mode
@@ -203,18 +203,18 @@ func (e *Employee) createEnv(cf models.Config) (Task, error) {
 			chromedp.Nodes("section.up-card-section.up-card-list-section.up-card-hover", &nodes, chromedp.ByQueryAll, chromedp.AtLeast(0)),
 		}
 		if err := chromedp.Run(ctx, tasks); err != nil {
-			return nil, err
+			return nil, cf.Id, err
 		}
 		if len(nodes) == 0 {
-			return nil, errors.New("err : Can't find any node")
+			return nil, cf.Id, errors.New("err : Can't find any node")
 		}
-		return nil, nil
+		return nil, cf.Id, nil
 	}, nil
 }
 
 func (e *Employee) createJob(cf models.Config) Task {
 	log.Println("createJob")
-	return func(ctx context.Context) (*Result, error) {
+	return func(ctx context.Context) (*Result, string, error) {
 		var nodes []*cdp.Node
 		var job models.Job
 		err := chromedp.Run(ctx,
@@ -223,10 +223,10 @@ func (e *Employee) createJob(cf models.Config) Task {
 			chromedp.Sleep(3*time.Second))
 
 		if err != nil {
-			return nil, err
+			return nil, cf.Id, err
 		}
 		if len(nodes) == 0 {
-			return nil, errors.New("err : Can't find any node")
+			return nil, cf.Id, errors.New("err : Can't find any node")
 		}
 
 		for _, node := range nodes {
@@ -246,12 +246,12 @@ func (e *Employee) createJob(cf models.Config) Task {
 				return nil
 			}))
 			if err != nil {
-				return nil, err
+				return nil, cf.Id, err
 			}
 		}
 		return &Result{
 			Data: "HelloWorld",
-		}, nil
+		}, cf.Id, nil
 	}
 }
 
@@ -262,11 +262,12 @@ func setUpChromeInstance(extCtx context.Context, taskChan <-chan Task, errChan c
 			return
 		case tasks := <-taskChan:
 			log.Println("Receive new tasks")
-			result, err := tasks(extCtx)
+			result, cfId, err := tasks(extCtx)
 			if err != nil {
 				errChan <- ErrorMessage{
-					Type:    WARNING,
-					Message: err.Error(),
+					ConfigID: cfId,
+					Type:     WARNING,
+					Message:  err.Error(),
 				}
 			} else {
 				resultChan <- result

@@ -79,154 +79,76 @@ func TestRunValidConfig(t *testing.T) {
 
 	ids := SdkInstance().Run(cf)
 	require.Equal(t, len(ids), 1)
-	time.Sleep(20 * time.Second)
+	time.Sleep(10 * time.Second)
 	isActive := SdkInstance().IsConfigActived(cf.Account.Email, cf.Mode)
 	require.Equal(t, true, isActive)
 }
 
 func TestRunInvalidConfig(t *testing.T) {
+	cf := initInvalidConfig(t, 30)
 
+	ids := SdkInstance().Run(cf)
+	require.Equal(t, len(ids), 1)
+	time.Sleep(10 * time.Second)
+	isActive := SdkInstance().IsConfigActived(cf.Account.Email, cf.Mode)
+	require.Equal(t, false, isActive)
 }
 
 func TestRestartValidConfig(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	cf := initValidConfig(t, 30)
 
-	numGoroutine := runtime.NumGoroutine()
-	log.Printf("NumGoroutine before %d", numGoroutine)
-	err := SdkInstance().Run(cf)
-
-	require.Nil(t, err)
-
-	log.Printf("numGorountine after %d", runtime.NumGoroutine())
-	isConfigActived := false
-	for i := 0; i < 3; i++ {
-		if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
-			isConfigActived = true
-			break
-		}
-		time.Sleep(time.Second)
-	}
-
-	require.Equal(t, isConfigActived, true)
+	ids := SdkInstance().Run(cf)
+	require.Equal(t, len(ids), 1)
+	time.Sleep(10 * time.Second)
+	isActive := SdkInstance().IsConfigActived(cf.Account.Email, cf.Mode)
+	require.Equal(t, true, isActive)
 
 	time.Sleep(5 * time.Second)
 	log.Printf("numGorountine after %d", runtime.NumGoroutine())
 
-	require.Equal(t, 11, runtime.NumGoroutine()-numGoroutine)
-
 	//restart
 	cf.Interval = 50000
-	err = SdkInstance().Run(cf)
-
-	require.Nil(t, err)
-
-	log.Printf("numGorountine after %d", runtime.NumGoroutine())
-	isConfigActived = false
-	for i := 0; i < 3; i++ {
-		if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
-			isConfigActived = true
-			break
-		}
-		time.Sleep(time.Second)
-	}
-
-	require.Equal(t, isConfigActived, true)
+	ids = SdkInstance().Run(cf)
+	require.Equal(t, 1, len(ids))
+	time.Sleep(10 * time.Second)
+	isActive = SdkInstance().IsConfigActived(cf.Account.Email, cf.Mode)
+	require.Equal(t, true, isActive)
 
 	time.Sleep(10 * time.Second)
 	log.Printf("numGorountine after %d", runtime.NumGoroutine())
 
-	require.Equal(t, runtime.NumGoroutine()-numGoroutine, 11)
+	require.Equal(t, 1, SdkInstance().GetActiveConfigCount())
 }
 
 func TestRestartInvalidConfig(t *testing.T) {
-	// log.SetFlags(log.LstdFlags | log.Lshortfile)
-	// cf := initValidConfig(t, 30)
+	cf := initValidConfig(t, 30)
 
-	// numGoroutine := runtime.NumGoroutine()
-	// log.Printf("NumGoroutine before %d", numGoroutine)
-	// err := SdkInstance().Run(cf)
+	ids := SdkInstance().Run(cf)
+	require.Equal(t, len(ids), 1)
+	time.Sleep(10 * time.Second)
+	isActive := SdkInstance().IsConfigActived(cf.Account.Email, cf.Mode)
+	require.Equal(t, true, isActive)
 
-	// require.Nil(t, err)
+	time.Sleep(5 * time.Second)
+	log.Printf("numGorountine after %d", runtime.NumGoroutine())
 
-	// log.Printf("numGorountine after %d", runtime.NumGoroutine())
-	// isConfigActived := false
-	// for i := 0; i < 3; i++ {
-	// 	if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
-	// 		isConfigActived = true
-	// 		break
-	// 	}
-	// 	time.Sleep(time.Second)
-	// }
+	//restart
+	cf.Interval = 50000
+	ids = SdkInstance().Run(cf)
+	require.Equal(t, len(ids), 1)
+	time.Sleep(10 * time.Second)
+	isActive = SdkInstance().IsConfigActived(cf.Account.Email, cf.Mode)
+	require.Equal(t, true, isActive)
 
-	// require.Equal(t, isConfigActived, true)
+	time.Sleep(10 * time.Second)
+	log.Printf("numGorountine after %d", runtime.NumGoroutine())
 
-	// time.Sleep(5 * time.Second)
-	// log.Printf("numGorountine after %d", runtime.NumGoroutine())
-
-	// require.Equal(t, 11, runtime.NumGoroutine()-numGoroutine)
-
-	// //restart
-	// cf.Interval = 50000
-	// err = SdkInstance().Run(cf)
-
-	// require.Nil(t, err)
-
-	// log.Printf("numGorountine after %d", runtime.NumGoroutine())
-	// isConfigActived = false
-	// for i := 0; i < 3; i++ {
-	// 	if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
-	// 		isConfigActived = true
-	// 		break
-	// 	}
-	// 	time.Sleep(time.Second)
-	// }
-
-	// require.Equal(t, isConfigActived, true)
-
-	// time.Sleep(10 * time.Second)
-	// log.Printf("numGorountine after %d", runtime.NumGoroutine())
-
-	// require.Equal(t, runtime.NumGoroutine()-numGoroutine, 11)
+	require.Equal(t, 1, SdkInstance().GetActiveConfigCount())
 }
 
 func TestStopValidConfig(t *testing.T) {
-	// cf := initValidConfig(t, 30)
 
-	// numGoroutine := runtime.NumGoroutine()
-	// log.Printf("NumGoroutine before %d", numGoroutine)
-	// err := SdkInstance().Run(cf)
-
-	// require.Nil(t, err)
-
-	// isConfigActived := false
-	// for i := 0; i < 3; i++ {
-	// 	if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
-	// 		isConfigActived = true
-	// 		break
-	// 	}
-	// 	time.Sleep(time.Second)
-	// }
-
-	// require.Equal(t, isConfigActived, true)
-	// time.Sleep(5 * time.Second)
-
-	// err = SdkInstance().Stop(cf)
-
-	// require.Nil(t, err)
-
-	// time.Sleep(5 * time.Second)
-
-	// isConfigActived = false
-	// for i := 0; i < 3; i++ {
-	// 	if SdkInstance().IsConfigActived(cf.Account.Email, models.SYNC_BEST_MATCH) {
-	// 		isConfigActived = true
-	// 		break
-	// 	}
-	// 	time.Sleep(time.Second)
-	// }
-
-	// require.Equal(t, isConfigActived, false)
 }
 
 func TestStopInvalidConfig(t *testing.T) {

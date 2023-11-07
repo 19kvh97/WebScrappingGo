@@ -15,22 +15,26 @@ type Manager struct {
 	subcribers         map[models.PackageType][]*models.Distributor
 	mutex              sync.Mutex
 	StopWork           chan struct{}
+	MaxEmployees       int
+}
+
+func NewManager(maxEmployees int) *Manager {
+	return &Manager{
+		resultChannel:      make(chan models.IParcell),
+		internalErrChannel: make(chan ErrorMessage, maxEmployees),
+		ErrorChannel:       make(chan string),
+		employees:          make(map[string]Employee),
+		subcribers:         make(map[models.PackageType][]*models.Distributor),
+		StopWork:           make(chan struct{}),
+		MaxEmployees:       maxEmployees,
+	}
 }
 
 func (m *Manager) StartWorking() {
-	m.mutex.Lock()
-	m.resultChannel = make(chan models.IParcell)
-	m.internalErrChannel = make(chan ErrorMessage)
-	if m.employees == nil {
-		m.employees = make(map[string]Employee)
-	}
-	m.subcribers = make(map[models.PackageType][]*models.Distributor)
-	m.mutex.Unlock()
 	go func() {
 		for {
 			select {
 			case result := <-m.resultChannel:
-
 				go m.publish(models.Package{
 					Type: models.UPWORK_JOB_PACKAGE,
 					Data: result,
@@ -40,6 +44,7 @@ func (m *Manager) StartWorking() {
 				return
 			case msg := <-m.internalErrChannel:
 				log.Printf("msg : %v", msg)
+				m.StopConfig(msg.ConfigID)
 			}
 		}
 	}()
@@ -48,9 +53,7 @@ func (m *Manager) StartWorking() {
 func (m *Manager) RunConfig(cf models.Config) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	if m.employees == nil {
-		m.employees = make(map[string]Employee)
-	}
+	log.Printf("Run or update config %s", cf.Id)
 
 	if employee, ok := m.employees[cf.Id]; ok {
 		employee.UpdateConfig(cf)
@@ -71,6 +74,8 @@ func (m *Manager) StopConfig(id string) {
 	if empl, ok := m.employees[id]; ok {
 		close(empl.StopWork)
 		delete(m.employees, id)
+	} else {
+		log.Printf("employe with id %s not existed", id)
 	}
 }
 

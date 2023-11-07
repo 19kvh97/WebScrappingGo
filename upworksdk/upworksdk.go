@@ -29,10 +29,8 @@ func SdkInstance() *SdkManager {
 }
 
 func (sdkM *SdkManager) init() {
-	sdkM.factoryManager = &factory.Manager{
-		ErrorChannel: make(chan string),
-		StopWork:     make(chan struct{}),
-	}
+	sdkM.factoryManager = factory.NewManager(5)
+	sdkM.factoryManager.StartWorking()
 }
 
 func (sdkM *SdkManager) ErrorChannel() chan string {
@@ -46,9 +44,7 @@ func (sdkM *SdkManager) Stop(conf models.Config) error {
 }
 
 func (sdkM *SdkManager) GetActiveConfigCount() int {
-	activeCount := 0
-
-	return activeCount
+	return sdkM.factoryManager.ActiveEmployeeCount()
 }
 
 func (sdkM *SdkManager) IsConfigActived(email string, mode models.RunningMode) bool {
@@ -73,6 +69,8 @@ func (sdkM *SdkManager) RegisterListener(email string, mode models.RunningMode, 
 }
 
 func (sdkM *SdkManager) Run(configs ...models.Config) []string {
+
+	var ids []string
 
 	var updatedIndex []int
 	for _, conf := range configs {
@@ -109,11 +107,7 @@ func (sdkM *SdkManager) Run(configs ...models.Config) []string {
 	log.Printf("new added config length : %d", len(sdkM.configs))
 	for _, idx := range updatedIndex {
 		sdkM.factoryManager.RunConfig(sdkM.configs[idx])
-	}
-
-	var ids []string
-	for _, cf := range sdkM.configs {
-		ids = append(ids, cf.Id)
+		ids = append(ids, sdkM.configs[idx].Id)
 	}
 
 	return ids
